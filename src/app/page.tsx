@@ -32,6 +32,7 @@ export default function Home() {
     setGoal(newGoal);
     saveGoal(newGoal);
     setDailyRecord(getRecordByDate(today));
+    setActiveTab("home");
     fetchGapAnalysis(newGoal);
   };
 
