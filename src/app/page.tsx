@@ -20,6 +20,8 @@ export default function Home() {
   const [viewMode, setViewMode] = useState<"day" | "week" | "month">("week");
   const [isGeneratingBonus, setIsGeneratingBonus] = useState(false);
   const [showCongratsModal, setShowCongratsModal] = useState(false);
+  const [congratsComment, setCongratsComment] = useState("");
+  const [congratsPoints, setCongratsPoints] = useState(0);
 
   const today = new Date().toISOString().split('T')[0];
 
@@ -101,7 +103,10 @@ export default function Home() {
 
     // If it is now all done, show modal (unless it was already all done)
     if (isNowAllDone && !wasAllDone) {
+      const total = calculateTotalScore();
+      setCongratsPoints(total);
       setShowCongratsModal(true);
+      fetchCongratsComment();
     }
 
     // Analytics: log action toggle (fire-and-forget)
@@ -153,6 +158,27 @@ export default function Home() {
       });
     });
     return total;
+  };
+
+  const fetchCongratsComment = async () => {
+    if (!goal) return;
+    try {
+      const res = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          goal: goal.title,
+          mode: "congrats_comment"
+        }),
+      });
+      const data = await res.json();
+      if (data.result?.text) {
+        setCongratsComment(data.result.text);
+      }
+    } catch (e) {
+      console.error(e);
+      setCongratsComment("今日も一歩、理想の自分に近づきましたね！");
+    }
   };
 
   const handleGenerateBonus = async () => {
@@ -268,14 +294,43 @@ export default function Home() {
               </div>
             </div>
 
-            <h2 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-br from-white via-indigo-200 to-indigo-400 mb-4 tracking-tighter drop-shadow-2xl">
+            <h2 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-br from-white via-indigo-200 to-indigo-400 mb-2 tracking-tighter drop-shadow-2xl">
               PERFECT DAY!
             </h2>
 
-            <p className="text-base text-zinc-300 font-bold mb-10 leading-relaxed bg-zinc-900/50 p-6 rounded-3xl border border-zinc-800 backdrop-blur-sm">
-              今日のタスクをすべて完了しました！<br />
-              <span className="text-indigo-400 text-lg mt-2 block">あなたは本当に素晴らしい！✨</span>
-            </p>
+            {/* Total Points Display */}
+            <div className="flex items-baseline gap-1.5 mb-6">
+              <span className="text-sm font-black text-indigo-400 uppercase tracking-widest">Total</span>
+              <span className="text-5xl font-black text-white tabular-nums drop-shadow-[0_0_15px_rgba(99,102,241,0.5)]">
+                {congratsPoints}
+              </span>
+              <span className="text-sm font-black text-zinc-500 uppercase tracking-widest">pts</span>
+            </div>
+
+            <div className="w-full space-y-6 mb-10">
+              <div className="bg-zinc-900/50 p-6 rounded-3xl border border-zinc-800 backdrop-blur-sm relative overflow-hidden group">
+                <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500/50" />
+                <p className="text-base text-zinc-300 font-bold leading-relaxed text-left pl-2">
+                  今日のタスクをすべて完了しました！<br />
+                  <span className="text-indigo-400 text-lg mt-2 block">あなたは本当に素晴らしい！✨</span>
+                </p>
+              </div>
+
+              {/* AI Growth Comment */}
+              <div className="px-4 animate-fade-in" style={{ animationDelay: '0.3s' }}>
+                {congratsComment ? (
+                  <p className="text-sm text-indigo-300/90 font-medium italic leading-relaxed">
+                    &ldquo;{congratsComment}&rdquo;
+                  </p>
+                ) : (
+                  <div className="flex justify-center gap-1">
+                    <div className="w-1 h-1 bg-indigo-500/30 rounded-full animate-bounce" style={{ animationDelay: '0s' }} />
+                    <div className="w-1 h-1 bg-indigo-500/30 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
+                    <div className="w-1 h-1 bg-indigo-500/30 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
+                  </div>
+                )}
+              </div>
+            </div>
 
             <button
               onClick={handleCloseCongratsModal}
