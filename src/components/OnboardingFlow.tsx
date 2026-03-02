@@ -68,6 +68,7 @@ export default function OnboardingFlow({ onComplete, isLoading: parentLoading }:
         if (!goalTitle.trim()) return;
 
         setIsLoading(true);
+        setLastError("");
         try {
             const res = await fetch("/api/generate", {
                 method: "POST",
@@ -116,10 +117,11 @@ export default function OnboardingFlow({ onComplete, isLoading: parentLoading }:
             setStep("kpi_review");
         } catch (error: any) {
             console.error("Plan generation error:", error);
+            setLastError(error.message);
             const isNetworkError = error.message.includes("fetch") || error.message.includes("network");
             const errorMessage = isNetworkError
-                ? "通信が少し不安定なようです。電波の良い場所でもう一度お試しください。🌱"
-                : "AIが考え込んでしまったようです。もう一度ボタンを押すと、今度はスムーズに作成できるかもしれません。🚀";
+                ? `通信が少し不安定なようです (${error.message})。電波の良い場所でもう一度お試しください。🌱`
+                : `AIが考え込んでしまったようです (${error.message})。もう一度ボタンを押すと、今度はスムーズに作成できるかもしれません。🚀`;
             alert(errorMessage);
         } finally {
             setIsLoading(false);
