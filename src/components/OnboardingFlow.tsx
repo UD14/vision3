@@ -167,7 +167,7 @@ export default function OnboardingFlow({ onComplete, isLoading: parentLoading }:
     };
 
     return (
-        <div className="w-full max-w-[400px] mx-auto animate-fade-in px-2 overflow-y-auto max-h-full pb-10">
+        <div className="flex-1 flex flex-col w-full max-w-[400px] mx-auto animate-fade-in px-2">
 
             {/* Full-screen loading overlay */}
             {isLoading && (
@@ -204,9 +204,9 @@ export default function OnboardingFlow({ onComplete, isLoading: parentLoading }:
                 </div>
             )}
             {step === "goal" && (
-                <form onSubmit={handleGoalSubmit} className="space-y-8 mt-12 pb-10">
-                    <div className="text-center mb-10">
-                        <div className="relative mx-auto mb-6 w-48 h-48">
+                <form onSubmit={handleGoalSubmit} className="flex-1 flex flex-col justify-between py-4 pb-8">
+                    <div className="text-center">
+                        <div className="relative mx-auto mb-4 w-32 h-32">
                             {/* Glow effect behind image */}
                             <div className="absolute inset-0 rounded-3xl bg-indigo-600/20 blur-2xl scale-110" />
                             <img
@@ -215,32 +215,32 @@ export default function OnboardingFlow({ onComplete, isLoading: parentLoading }:
                                 className="relative w-full h-full object-cover rounded-3xl border border-indigo-500/20 shadow-2xl shadow-indigo-900/40"
                             />
                         </div>
-                        <h2 className="text-2xl font-black text-white tracking-tight leading-tight">未来への設計図を書く</h2>
-                        <p className="text-sm text-zinc-500 mt-2 font-medium">達成したいことをもとに目の前のアクションを決めましょう</p>
+                        <h2 className="text-xl font-black text-white tracking-tight leading-tight">未来への設計図を書く</h2>
+                        <p className="text-sm text-zinc-500 mt-1 font-medium">達成したいことをもとに目の前のアクションを決めましょう</p>
                     </div>
 
-                    <div className="group">
-                        <label className="block text-[10px] font-black text-zinc-600 mb-3 uppercase tracking-[0.2em] pl-1">
-                            Your Goal
-                        </label>
-                        <div className="relative">
-                            <input
-                                type="text"
-                                value={goalTitle}
-                                onChange={(e) => setGoalTitle(e.target.value)}
-                                placeholder="例: 副業で月収10万円、TOEIC 800点取得"
-                                className="w-full px-6 py-5 bg-zinc-900/50 backdrop-blur-md border border-zinc-800 rounded-[2rem] text-white placeholder-zinc-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all text-sm font-bold shadow-inner"
-                                disabled={isLoading}
-                                required
-                            />
+                    <div className="space-y-4">
+                        <div className="group">
+                            <label className="block text-[10px] font-black text-zinc-600 mb-2 uppercase tracking-[0.2em] pl-1">
+                                Your Goal
+                            </label>
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    value={goalTitle}
+                                    onChange={(e) => setGoalTitle(e.target.value)}
+                                    placeholder="例: 副業で月収10万円、TOEIC 800点取得"
+                                    className="w-full px-6 py-4 bg-zinc-900/50 backdrop-blur-md border border-zinc-800 rounded-[2rem] text-white placeholder-zinc-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all text-sm font-bold shadow-inner"
+                                    disabled={isLoading}
+                                    required
+                                />
+                            </div>
                         </div>
-                    </div>
 
-                    <div className="relative pt-4">
                         <button
                             type="submit"
                             disabled={!goalTitle.trim() || isLoading}
-                            className={`w-full py-5 px-6 font-black rounded-[2rem] transition-all duration-500 shadow-xl shadow-indigo-900/20 flex flex-col items-center justify-center gap-1 overflow-hidden ${isLoading
+                            className={`w-full py-4 px-6 font-black rounded-[2rem] transition-all duration-500 shadow-xl shadow-indigo-900/20 flex flex-col items-center justify-center gap-1 overflow-hidden ${isLoading
                                 ? "bg-zinc-800 text-zinc-500 cursor-not-allowed scale-[0.98]"
                                 : "bg-indigo-600 hover:bg-indigo-500 text-white active:scale-[0.98]"
                                 }`}
@@ -254,7 +254,6 @@ export default function OnboardingFlow({ onComplete, isLoading: parentLoading }:
                                 </div>
                             )}
                         </button>
-
                     </div>
                 </form>
             )}
