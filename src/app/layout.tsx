@@ -29,7 +29,7 @@ export default function RootLayout({
           {/* Subtle reflection/gradient overlay */}
           <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-white/[0.02] to-transparent z-50 rounded-[inherit]" />
           <div className="relative h-full flex flex-col overflow-hidden">
-            <main className="flex-1 overflow-y-auto no-scrollbar relative z-10">
+            <main className="flex-1 overflow-hidden relative z-10">
               {children}
             </main>
           </div>
