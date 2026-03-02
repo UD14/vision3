@@ -1,36 +1,51 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Vision3 - 未来から逆算して今日を設計する
 
-## Getting Started
+> 夢を入力すると、AIが今日やるべき具体的な行動を3つ提案する行動設計アプリ。
 
-First, run the development server:
+## 技術スタック
+
+- **Next.js 16** (App Router)
+- **TypeScript**
+- **Tailwind CSS**
+- **Google Gemini API** (gemini-2.0-flash)
+- **LocalStorage** (データ保存)
+
+## ローカル開発
+
+```bash
+cd vision3-web
+npm install
+```
+
+### 環境変数
+
+`.env.local` ファイルを作成:
+
+```
+GEMINI_API_KEY=your_api_key_here
+```
+
+### 起動
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+http://localhost:3000 で開きます。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Vercelデプロイ手順
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. このリポジトリをGitHubにプッシュ
+2. [vercel.com](https://vercel.com) でGitHubリポジトリをインポート
+3. **Root Directory** を `vision3-web` に設定
+4. **Environment Variables** に `GEMINI_API_KEY` を追加
+5. Deploy
 
-## Learn More
+## 機能
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- 🎯 夢（Goal）入力 → AIが3タスク自動生成
+- ✏️ タスクの編集・削除・追加
+- ✓ ワンタップ完了 → 次のアクション提案
+- 🔄 完了後に「発展タスク」or「別案」を選択
+- 💚 丸つけ機能（ポジティブフィードバック）
+- 📋 履歴ページ（過去のGoalとタスク一覧）

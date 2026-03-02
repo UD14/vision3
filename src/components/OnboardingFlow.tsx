@@ -1,0 +1,237 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { Goal, KPI } from "@/lib/types";
+import { generateId } from "@/lib/storage";
+
+type Props = {
+    onComplete: (goal: Goal) => void;
+    isLoading: boolean;
+};
+
+type Step = "goal" | "kpi_review" | "status";
+
+export default function OnboardingFlow({ onComplete, isLoading: parentLoading }: Props) {
+    const [step, setStep] = useState<Step>("goal");
+    const [goalTitle, setGoalTitle] = useState("");
+    const [duration, setDuration] = useState("");
+    const [kpis, setKpis] = useState<KPI[]>([]);
+    const [currentStatus, setCurrentStatus] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
+
+    const phrases = [
+        "目標を決めて走り出したあなたは偉い！",
+        "「計画を立てた時点で半分実現している」- ゲーテ",
+        "理想の自分への第一歩、準備はいいですか？",
+        "完璧である必要はありません。まずは一歩から。",
+        "あなたの情熱を、具体的な行動に変えています...",
+        "「千里の道も一歩から」- 老子",
+        "最も困難なことは、行動しようと決心することです。",
+        "昨日より今日、今日より明日。進化を楽しみましょう。",
+        "Vision3があなたの最高のパートナーになります。",
+        "脳は具体的な計画を好みます。今、それを作っています。",
+        "あなたは既に行動を開始しています。それは最も難しいステップです。"
+    ];
+    const [phraseIdx, setPhraseIdx] = useState(0);
+
+    useEffect(() => {
+        if (isLoading) {
+            const interval = setInterval(() => {
+                setPhraseIdx(prev => (prev + 1) % phrases.length);
+            }, 2500);
+            return () => clearInterval(interval);
+        }
+    }, [isLoading]);
+
+    const handleGoalSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!goalTitle.trim()) return;
+
+        setIsLoading(true);
+        try {
+            const res = await fetch("/api/generate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ goal: goalTitle, mode: "initialize_plan" }),
+            });
+            const data = await res.json();
+
+            if (data.error || !data.result) throw new Error(data.error || "Plan generation failed");
+
+            // Only generate KPI titles initially as requested
+            const enrichedKpis: KPI[] = data.result.kpis.map((kpi: any) => ({
+                id: generateId(),
+                title: kpi.title,
+                actions: [] // Actions will be generated later
+            }));
+
+            setKpis(enrichedKpis);
+            setDuration(data.result.duration);
+            setCurrentStatus(data.result.suggestedCurrentStatus || "");
+            setStep("kpi_review");
+        } catch (error) {
+            console.error(error);
+            alert("プランの生成に失敗しました。もう一度お試しください。");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleKpiChange = (idx: number, newTitle: string) => {
+        const newKpis = [...kpis];
+        newKpis[idx].title = newTitle;
+        setKpis(newKpis);
+    };
+
+    const handleKpiConfirm = () => {
+        setStep("status");
+    };
+
+    const handleFinalSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        const goal: Goal = {
+            id: generateId(),
+            title: goalTitle,
+            currentStatus,
+            duration,
+            kpis,
+            createdAt: new Date().toISOString(),
+            isInitialSetup: true, // Mark for action generation
+        };
+        onComplete(goal);
+    };
+
+    return (
+        <div className="w-full max-w-[400px] mx-auto animate-fade-in px-2 overflow-y-auto max-h-full pb-10">
+            {step === "goal" && (
+                <form onSubmit={handleGoalSubmit} className="space-y-8 mt-12 pb-10">
+                    <div className="text-center mb-12">
+                        <div className="w-20 h-20 bg-indigo-500/10 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-indigo-500/20 rotate-3 animate-pulse-subtle">
+                            <span className="text-4xl">🚀</span>
+                        </div>
+                        <h2 className="text-2xl font-black text-white tracking-tight leading-tight">未来への設計図を書く</h2>
+                        <p className="text-sm text-zinc-500 mt-2 font-medium">達成したいことをもとに目の前のアクションを決めましょう</p>
+                    </div>
+
+                    <div className="group">
+                        <label className="block text-[10px] font-black text-zinc-600 mb-3 uppercase tracking-[0.2em] pl-1">
+                            Your Goal
+                        </label>
+                        <div className="relative">
+                            <input
+                                type="text"
+                                value={goalTitle}
+                                onChange={(e) => setGoalTitle(e.target.value)}
+                                placeholder="例: 月収10万円、TOEIC 800点"
+                                className="w-full px-6 py-5 bg-zinc-900/50 backdrop-blur-md border border-zinc-800 rounded-[2rem] text-white placeholder-zinc-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all text-lg font-bold shadow-inner"
+                                disabled={isLoading}
+                                required
+                            />
+                        </div>
+                    </div>
+
+                    <div className="relative pt-4">
+                        <button
+                            type="submit"
+                            disabled={!goalTitle.trim() || isLoading}
+                            className={`w-full py-5 px-6 font-black rounded-[2rem] transition-all duration-500 shadow-xl shadow-indigo-900/20 flex flex-col items-center justify-center gap-1 overflow-hidden ${isLoading
+                                    ? "bg-zinc-800 text-zinc-500 cursor-not-allowed scale-[0.98]"
+                                    : "bg-indigo-600 hover:bg-indigo-500 text-white active:scale-[0.98]"
+                                }`}
+                        >
+                            <span>目標をアクションに分解する</span>
+                            {isLoading && (
+                                <div className="flex gap-1.5 mt-2 animate-fade-in">
+                                    <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }} />
+                                    <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
+                                    <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
+                                </div>
+                            )}
+                        </button>
+                        {isLoading && (
+                            <p className="mt-4 text-center text-xs text-indigo-400 font-bold animate-pulse px-4">
+                                {phrases[phraseIdx]}
+                            </p>
+                        )}
+                    </div>
+                </form>
+            )}
+
+            {step === "kpi_review" && (
+                <div className="space-y-8 mt-12 animate-fade-in pb-12">
+                    <div className="text-center mb-8">
+                        <h2 className="text-2xl font-black text-white tracking-tight">AIが導き出した3つの鍵</h2>
+                        <p className="text-sm text-zinc-500 mt-2 font-medium">
+                            目標達成までの目安: <span className="text-indigo-400 font-black">{duration}</span>
+                        </p>
+                    </div>
+
+                    <div className="space-y-4">
+                        <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest pl-2 mb-2">KPIを選択・編集してください</p>
+                        {kpis.map((kpi, idx) => (
+                            <div key={kpi.id} className="group relative animate-slide-up" style={{ animationDelay: `${idx * 0.1}s` }}>
+                                <label className="absolute left-6 -top-2 px-2 bg-zinc-950 text-[9px] font-black text-indigo-500 uppercase tracking-widest z-10">CATEGORY {idx + 1}</label>
+                                <input
+                                    type="text"
+                                    value={kpi.title}
+                                    onChange={(e) => handleKpiChange(idx, e.target.value)}
+                                    className="w-full px-6 py-5 bg-zinc-900/40 border border-zinc-800 rounded-[2rem] text-white font-bold focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all"
+                                />
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="pt-6 space-y-4">
+                        <div className="group">
+                            <label className="block text-[10px] font-black text-zinc-600 mb-3 uppercase tracking-[0.2em] pl-1">
+                                期間を調整 (任意)
+                            </label>
+                            <input
+                                type="text"
+                                value={duration}
+                                onChange={(e) => setDuration(e.target.value)}
+                                className="w-full px-6 py-4 bg-zinc-900/50 border border-zinc-800 rounded-2xl text-white font-bold"
+                            />
+                        </div>
+
+                        <button
+                            onClick={handleKpiConfirm}
+                            className="w-full py-5 px-6 bg-indigo-600 hover:bg-indigo-500 text-white font-black rounded-[2rem] transition-all shadow-lg active:scale-95"
+                        >
+                            この戦略で進める
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {step === "status" && (
+                <form onSubmit={handleFinalSubmit} className="space-y-8 mt-12 animate-fade-in pb-12">
+                    <div className="text-center mb-12">
+                        <h2 className="text-2xl font-black text-white tracking-tight">現在の状況は？</h2>
+                        <p className="text-sm text-zinc-500 mt-2 font-medium">AIが目標とのギャップを精密に分析します</p>
+                    </div>
+
+                    <div className="group">
+                        <label className="block text-[10px] font-black text-zinc-600 mb-3 uppercase tracking-[0.2em] pl-1">
+                            Your Current State
+                        </label>
+                        <textarea
+                            value={currentStatus}
+                            onChange={(e) => setCurrentStatus(e.target.value)}
+                            placeholder="例: 体重70kg、運動は週1回以下 / 英語は中学レベル..."
+                            className="w-full px-6 py-5 bg-zinc-900/50 border border-zinc-800 rounded-[2rem] text-white placeholder-zinc-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all text-lg font-bold min-h-[150px] resize-none"
+                            required
+                        />
+                    </div>
+
+                    <button
+                        type="submit"
+                        className="w-full py-5 px-6 bg-indigo-600 hover:bg-indigo-500 text-white font-black rounded-[2rem] transition-all shadow-xl shadow-indigo-900/20 active:scale-95 translate-y-0 hover:-translate-y-1"
+                    >
+                        Vision3 を開始する
+                    </button>
+                </form>
+            )}
+        </div>
+    );
+}
