@@ -15,6 +15,8 @@ export default function OnboardingFlow({ onComplete, isLoading: parentLoading }:
     const [step, setStep] = useState<Step>("goal");
     const [goalTitle, setGoalTitle] = useState("");
     const [duration, setDuration] = useState("");
+    const [durationValue, setDurationValue] = useState(1);
+    const [durationUnit, setDurationUnit] = useState("週間");
     const [kpis, setKpis] = useState<KPI[]>([]);
     const [currentStatus, setCurrentStatus] = useState("");
     const [isLoading, setIsLoading] = useState(false);
@@ -88,7 +90,21 @@ export default function OnboardingFlow({ onComplete, isLoading: parentLoading }:
 
             setKpis(enrichedKpis);
             setOriginalKpiTitles(enrichedKpis.map(k => k.title));
-            setDuration(data.result.duration);
+            const rawDuration = data.result.duration || "1ヶ月";
+            setDuration(rawDuration);
+
+            // Parse duration (e.g., "3ヶ月", "2週間", "5日")
+            const numMatch = rawDuration.match(/(\d+)/);
+            if (numMatch) setDurationValue(parseInt(numMatch[1]));
+
+            const units = ["日", "週", "ヶ月", "年"];
+            const unitMatch = units.find(u => rawDuration.includes(u));
+            if (unitMatch) setDurationUnit(unitMatch);
+            else if (rawDuration.includes("week")) setDurationUnit("週");
+            else if (rawDuration.includes("month")) setDurationUnit("ヶ月");
+            else if (rawDuration.includes("year")) setDurationUnit("年");
+            else if (rawDuration.includes("day")) setDurationUnit("日");
+
             setCurrentStatus(data.result.suggestedCurrentStatus || "");
             setStep("kpi_review");
         } catch (error) {
@@ -153,6 +169,12 @@ export default function OnboardingFlow({ onComplete, isLoading: parentLoading }:
             setIsRegenerating(false);
         }
         setStep("status");
+    };
+
+    const updateDuration = (val: number, unit: string) => {
+        setDurationValue(val);
+        setDurationUnit(unit);
+        setDuration(`${val}${unit}`);
     };
 
     const handleFinalSubmit = (e: React.FormEvent) => {
@@ -343,15 +365,47 @@ export default function OnboardingFlow({ onComplete, isLoading: parentLoading }:
 
                     <div className="pt-6 space-y-4">
                         <div className="group">
-                            <label className="block text-[10px] font-black text-zinc-600 mb-3 uppercase tracking-[0.2em] pl-1">
+                            <label className="block text-[10px] font-black text-zinc-600 mb-4 uppercase tracking-[0.2em] pl-1">
                                 期間を調整 (任意)
                             </label>
-                            <input
-                                type="text"
-                                value={duration}
-                                onChange={(e) => setDuration(e.target.value)}
-                                className="w-full px-6 py-4 bg-zinc-900/50 border border-zinc-800 rounded-2xl text-white font-bold"
-                            />
+
+                            <div className="flex flex-col gap-4">
+                                {/* Number Picker */}
+                                <div className="flex items-center justify-between bg-zinc-900/50 border border-zinc-800 rounded-2xl p-2 h-16">
+                                    <button
+                                        onClick={() => updateDuration(Math.max(1, durationValue - 1), durationUnit)}
+                                        className="w-12 h-12 flex items-center justify-center bg-zinc-800 hover:bg-zinc-700 rounded-xl transition-colors text-xl font-bold text-white shadow-lg active:scale-95"
+                                    >
+                                        −
+                                    </button>
+                                    <div className="flex items-baseline gap-1">
+                                        <span className="text-2xl font-black text-white">{durationValue}</span>
+                                        <span className="text-sm font-bold text-zinc-500">{durationUnit}</span>
+                                    </div>
+                                    <button
+                                        onClick={() => updateDuration(durationValue + 1, durationUnit)}
+                                        className="w-12 h-12 flex items-center justify-center bg-zinc-800 hover:bg-zinc-700 rounded-xl transition-colors text-xl font-bold text-white shadow-lg active:scale-95"
+                                    >
+                                        +
+                                    </button>
+                                </div>
+
+                                {/* Unit Selector */}
+                                <div className="flex gap-2 p-1.5 bg-zinc-900/50 border border-zinc-800 rounded-[1.5rem]">
+                                    {["日", "週", "ヶ月", "年"].map((u) => (
+                                        <button
+                                            key={u}
+                                            onClick={() => updateDuration(durationValue, u)}
+                                            className={`flex-1 py-3 text-[11px] font-black uppercase tracking-widest rounded-xl transition-all ${durationUnit === u
+                                                    ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20 scale-[1.02]"
+                                                    : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50"
+                                                }`}
+                                        >
+                                            {u}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
 
                         <button
