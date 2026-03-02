@@ -109,15 +109,15 @@ KPIカテゴリ: "${kpiTitle}"
 - 回答はテキストのみ（純粋な文字列）で返してください。`;
     }
 
-    const modelsToTry = ["gemini-1.5-flash", "gemini-2.0-flash", "gemini-1.5-pro"];
-    let lastError = null;
+    const modelsToTry = ["gemini-1.5-flash", "gemini-2.0-flash", "gemini-pro"];
+    let errors: string[] = [];
 
     for (const modelName of modelsToTry) {
       try {
         console.log(`Trying model: ${modelName} for mode: ${mode}`);
         const model = genAI.getGenerativeModel({
           model: modelName,
-          generationConfig: mode === "initialize_plan" ? { responseMimeType: "application/json" } : undefined
+          generationConfig: mode === "initialize_plan" && modelName !== "gemini-pro" ? { responseMimeType: "application/json" } : undefined
         });
 
         const result = await model.generateContent(prompt);
@@ -136,9 +136,9 @@ KPIカテゴリ: "${kpiTitle}"
               const parsed = JSON.parse(jsonMatch[0]);
               console.log("Successfully parsed JSON:", parsed);
               return NextResponse.json({ result: parsed });
-            } catch (pE) {
+            } catch (pE: any) {
               console.error(`JSON.parse failed for model ${modelName}:`, jsonMatch[0]);
-              throw pE;
+              throw new Error(`JSON parse error: ${pE.message}`);
             }
           } else {
             console.error(`No JSON pattern found in response from model ${modelName}`);
@@ -149,12 +149,12 @@ KPIカテゴリ: "${kpiTitle}"
         }
       } catch (e: any) {
         console.error(`Error with model ${modelName}:`, e.message);
-        lastError = e;
+        errors.push(`[${modelName}]: ${e.message}`);
         continue;
       }
     }
 
-    throw lastError;
+    throw new Error(`All models failed. Details -> ${errors.join(" | ")}`);
 
   } catch (error: any) {
     console.error("AI Generate Error:", error);
