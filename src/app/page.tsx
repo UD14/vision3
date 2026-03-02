@@ -153,12 +153,12 @@ export default function Home() {
   if (!mounted) return null;
 
   return (
-    <div className="flex flex-col h-full bg-zinc-950 text-white relative">
+    <div className="min-h-full bg-zinc-950 text-white relative">
       {/* Background Glow */}
       <div className="absolute -top-24 -left-24 w-64 h-64 bg-indigo-600/10 rounded-full blur-[100px] pointer-events-none" />
       <div className="absolute top-1/2 -right-24 w-80 h-80 bg-indigo-900/10 rounded-full blur-[120px] pointer-events-none" />
 
-      <div className="flex-1 overflow-y-auto no-scrollbar pb-10">
+      <div className="pb-24">
         {!goal ? (
           <div className="px-6 py-10">
             <header className="mb-12">

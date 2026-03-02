@@ -39,7 +39,7 @@ export default function TabNavigation({ activeTab, onTabChange }: Props) {
     ];
 
     return (
-        <nav className="sticky bottom-0 inset-x-0 bg-zinc-900/80 backdrop-blur-xl border-t border-zinc-800/50 pb-8 pt-3 px-6 z-50">
+        <nav className="fixed bottom-0 inset-x-0 bg-zinc-900/80 backdrop-blur-xl border-t border-zinc-800/50 pb-8 pt-3 px-6 z-50 max-w-[430px] mx-auto left-1/2 -translate-x-1/2">
             <div className="flex justify-between items-center max-w-[400px] mx-auto">
                 {tabs.map((tab) => {
                     const isActive = activeTab === tab.id;

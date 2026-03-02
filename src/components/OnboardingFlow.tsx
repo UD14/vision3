@@ -158,7 +158,7 @@ export default function OnboardingFlow({ onComplete, isLoading: parentLoading }:
                                 value={goalTitle}
                                 onChange={(e) => setGoalTitle(e.target.value)}
                                 placeholder="例: 副業で月収10万円、TOEIC 800点取得"
-                                className="w-full px-6 py-5 bg-zinc-900/50 backdrop-blur-md border border-zinc-800 rounded-[2rem] text-white placeholder-zinc-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all text-lg font-bold shadow-inner"
+                                className="w-full px-6 py-5 bg-zinc-900/50 backdrop-blur-md border border-zinc-800 rounded-[2rem] text-white placeholder-zinc-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all text-sm font-bold shadow-inner"
                                 disabled={isLoading}
                                 required
                             />
