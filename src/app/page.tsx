@@ -185,6 +185,36 @@ export default function Home() {
       <div className="absolute -top-24 -left-24 w-64 h-64 bg-indigo-600/10 rounded-full blur-[100px] pointer-events-none" />
       <div className="absolute top-1/2 -right-24 w-80 h-80 bg-indigo-900/10 rounded-full blur-[120px] pointer-events-none" />
 
+      {/* Bonus Generating Overlay */}
+      {isGeneratingBonus && (
+        <div className="absolute inset-0 z-[100] flex flex-col items-center justify-center bg-zinc-950/90 backdrop-blur-xl animate-fade-in">
+          <div className="absolute inset-0 bg-indigo-900/5" />
+          <div className="relative z-10 flex flex-col items-center gap-6 px-10 text-center">
+            {/* Illustration */}
+            <div className="relative w-32 h-32">
+              <div className="absolute inset-0 rounded-full bg-indigo-600/25 blur-xl animate-pulse" />
+              <img
+                src="/loading-ai.png"
+                alt="AI Generating"
+                className="relative w-full h-full object-cover rounded-full opacity-80"
+              />
+              <div className="absolute inset-0 rounded-full border border-violet-500/40 animate-spin" style={{ animationDuration: '2s' }} />
+            </div>
+            <div className="space-y-1.5">
+              <p className="text-xs font-black text-violet-400 uppercase tracking-[0.3em]">AI Generating</p>
+              <h3 className="text-lg font-black text-white tracking-tight">更なる高みへのアクションを生成中...</h3>
+              <p className="text-xs text-zinc-600 font-medium">現在の目標に基づき<br />今日すぐできる最高のアクションを考えています</p>
+            </div>
+            {/* Pulsing dots */}
+            <div className="flex gap-2">
+              <div className="w-1.5 h-1.5 bg-violet-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }} />
+              <div className="w-1.5 h-1.5 bg-violet-500 rounded-full animate-bounce" style={{ animationDelay: '0.15s' }} />
+              <div className="w-1.5 h-1.5 bg-violet-500 rounded-full animate-bounce" style={{ animationDelay: '0.3s' }} />
+            </div>
+          </div>
+        </div>
+      )}
+
       {!goal ? (
         // ── Onboarding: 完全にoverflow-hidden、スクロールなし ──
         <div className="flex-1 overflow-hidden flex flex-col">
