@@ -186,7 +186,7 @@ export default function Home() {
 
             {/* Tab Content */}
             {activeTab === "home" && (
-              <div className="space-y-12 animate-fade-in">
+              <div className="space-y-12 animate-fade-in pb-12">
                 <div className="text-center py-6 bg-zinc-900/30 backdrop-blur-md border border-zinc-800 rounded-[2.5rem] p-6">
                   <p className="text-[10px] font-black text-zinc-600 mb-2 uppercase tracking-widest">Active Target</p>
                   <h2 className="text-xl font-bold text-white leading-tight">{goal.title}</h2>

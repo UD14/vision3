@@ -38,7 +38,7 @@ export default function OnboardingFlow({ onComplete, isLoading: parentLoading }:
         if (isLoading) {
             const interval = setInterval(() => {
                 setPhraseIdx(prev => (prev + 1) % phrases.length);
-            }, 2500);
+            }, 4000);
             return () => clearInterval(interval);
         }
     }, [isLoading]);
@@ -103,6 +103,41 @@ export default function OnboardingFlow({ onComplete, isLoading: parentLoading }:
 
     return (
         <div className="w-full max-w-[400px] mx-auto animate-fade-in px-2 overflow-y-auto max-h-full pb-10">
+
+            {/* Full-screen loading overlay */}
+            {isLoading && (
+                <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-zinc-950/80 backdrop-blur-xl">
+                    {/* Animated glow blobs */}
+                    <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-72 h-72 bg-indigo-600/20 rounded-full blur-[100px] animate-pulse pointer-events-none" />
+                    <div className="absolute bottom-1/4 left-1/2 -translate-x-1/2 w-56 h-56 bg-violet-600/15 rounded-full blur-[80px] animate-pulse pointer-events-none" style={{ animationDelay: '1s' }} />
+
+                    <div className="relative z-10 flex flex-col items-center gap-8 px-10 text-center">
+                        {/* Spinner */}
+                        <div className="w-16 h-16 rounded-full border-2 border-zinc-800 border-t-indigo-500 animate-spin" />
+
+                        {/* Status text */}
+                        <div className="space-y-2">
+                            <p className="text-xs font-black text-indigo-400 uppercase tracking-[0.3em]">AI Processing</p>
+                            <h3 className="text-xl font-black text-white tracking-tight">アクションを設計中...</h3>
+                            <p className="text-xs text-zinc-600 font-medium">あなたの目標に最適なプランを生成しています</p>
+                        </div>
+
+                        {/* Rotating phrase */}
+                        <div className="max-w-[280px] min-h-[60px] flex items-center justify-center">
+                            <p className="text-sm text-zinc-300 font-medium leading-relaxed italic animate-fade-in" key={phraseIdx}>
+                                {phrases[phraseIdx]}
+                            </p>
+                        </div>
+
+                        {/* Pulsing dots */}
+                        <div className="flex gap-2">
+                            <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }} />
+                            <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '0.15s' }} />
+                            <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '0.3s' }} />
+                        </div>
+                    </div>
+                </div>
+            )}
             {step === "goal" && (
                 <form onSubmit={handleGoalSubmit} className="space-y-8 mt-12 pb-10">
                     <div className="text-center mb-12">
@@ -122,7 +157,7 @@ export default function OnboardingFlow({ onComplete, isLoading: parentLoading }:
                                 type="text"
                                 value={goalTitle}
                                 onChange={(e) => setGoalTitle(e.target.value)}
-                                placeholder="例: 月収10万円、TOEIC 800点"
+                                placeholder="例: 副業で月収10万円、TOEIC 800点取得"
                                 className="w-full px-6 py-5 bg-zinc-900/50 backdrop-blur-md border border-zinc-800 rounded-[2rem] text-white placeholder-zinc-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all text-lg font-bold shadow-inner"
                                 disabled={isLoading}
                                 required
@@ -135,8 +170,8 @@ export default function OnboardingFlow({ onComplete, isLoading: parentLoading }:
                             type="submit"
                             disabled={!goalTitle.trim() || isLoading}
                             className={`w-full py-5 px-6 font-black rounded-[2rem] transition-all duration-500 shadow-xl shadow-indigo-900/20 flex flex-col items-center justify-center gap-1 overflow-hidden ${isLoading
-                                    ? "bg-zinc-800 text-zinc-500 cursor-not-allowed scale-[0.98]"
-                                    : "bg-indigo-600 hover:bg-indigo-500 text-white active:scale-[0.98]"
+                                ? "bg-zinc-800 text-zinc-500 cursor-not-allowed scale-[0.98]"
+                                : "bg-indigo-600 hover:bg-indigo-500 text-white active:scale-[0.98]"
                                 }`}
                         >
                             <span>目標をアクションに分解する</span>
@@ -148,11 +183,7 @@ export default function OnboardingFlow({ onComplete, isLoading: parentLoading }:
                                 </div>
                             )}
                         </button>
-                        {isLoading && (
-                            <p className="mt-4 text-center text-xs text-indigo-400 font-bold animate-pulse px-4">
-                                {phrases[phraseIdx]}
-                            </p>
-                        )}
+
                     </div>
                 </form>
             )}
