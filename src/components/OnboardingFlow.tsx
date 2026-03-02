@@ -58,11 +58,15 @@ export default function OnboardingFlow({ onComplete, isLoading: parentLoading }:
 
             if (data.error || !data.result) throw new Error(data.error || "Plan generation failed");
 
-            // Only generate KPI titles initially as requested
+            // KPIとアクションをAPIレスポンスからそのまま使う
             const enrichedKpis: KPI[] = data.result.kpis.map((kpi: any) => ({
                 id: generateId(),
                 title: kpi.title,
-                actions: [] // Actions will be generated later
+                actions: (kpi.actions || []).map((a: any) => ({
+                    id: generateId(),
+                    title: a.title,
+                    score: a.score ?? 3,
+                }))
             }));
 
             setKpis(enrichedKpis);

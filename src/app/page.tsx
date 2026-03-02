@@ -33,22 +33,6 @@ export default function Home() {
     saveGoal(newGoal);
     setDailyRecord(getRecordByDate(today));
     fetchGapAnalysis(newGoal);
-    // Trigger action generation if needed
-    generateInitialActions(newGoal);
-  };
-
-  const generateInitialActions = (targetGoal: Goal) => {
-    const updatedKpis = targetGoal.kpis.map(kpi => ({
-      ...kpi,
-      actions: [
-        { id: generateId(), title: `${kpi.title}の基本アクション`, score: 3 },
-        { id: generateId(), title: `${kpi.title}の応用アクション`, score: 5 },
-        { id: generateId(), title: `${kpi.title}の定例チェック`, score: 2 },
-      ]
-    }));
-    const updatedGoal = { ...targetGoal, kpis: updatedKpis };
-    setGoal(updatedGoal);
-    saveGoal(updatedGoal);
   };
 
   const fetchGapAnalysis = async (targetGoal: Goal) => {
