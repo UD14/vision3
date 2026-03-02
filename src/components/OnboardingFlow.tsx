@@ -23,6 +23,7 @@ export default function OnboardingFlow({ onComplete, isLoading: parentLoading }:
     const [isRegenerating, setIsRegenerating] = useState(false);
     const [regeneratingKpiTitles, setRegeneratingKpiTitles] = useState<string[]>([]);
     const [originalKpiTitles, setOriginalKpiTitles] = useState<string[]>([]);
+    const [lastError, setLastError] = useState("");
 
     const phrases = [
         "目標を決めて走り出したあなたは偉い！",
@@ -344,6 +345,15 @@ export default function OnboardingFlow({ onComplete, isLoading: parentLoading }:
                                     </div>
                                 )}
                             </button>
+
+                            {lastError && (
+                                <div className="mt-4 p-4 bg-red-500/10 border border-red-500/30 rounded-xl animate-fade-in">
+                                    <p className="text-[10px] font-black text-red-500 uppercase tracking-widest mb-1">Diagnostic Info</p>
+                                    <p className="text-xs text-red-200/80 font-mono break-all leading-relaxed whitespace-pre-wrap">
+                                        {lastError}
+                                    </p>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </form>
