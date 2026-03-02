@@ -204,53 +204,53 @@ export default function OnboardingFlow({ onComplete, isLoading: parentLoading }:
                 </div>
             )}
             {step === "goal" && (
-                <form onSubmit={handleGoalSubmit} className="flex-1 flex flex-col justify-between py-4 pb-8">
-                    <div className="text-center">
-                        <div className="relative mx-auto mb-4 w-32 h-32">
-                            {/* Glow effect behind image */}
-                            <div className="absolute inset-0 rounded-3xl bg-indigo-600/20 blur-2xl scale-110" />
-                            <img
-                                src="/hero.png"
-                                alt="Vision3 Hero"
-                                className="relative w-full h-full object-cover rounded-3xl border border-indigo-500/20 shadow-2xl shadow-indigo-900/40"
-                            />
-                        </div>
-                        <h2 className="text-xl font-black text-white tracking-tight leading-tight">未来への設計図を書く</h2>
-                        <p className="text-sm text-zinc-500 mt-1 font-medium">達成したいことをもとに目の前のアクションを決めましょう</p>
+                <form onSubmit={handleGoalSubmit} className="flex-1 flex flex-col">
+                    {/* App name - small top-left */}
+                    <div className="px-6 pt-6 pb-0 flex-shrink-0">
+                        <span className="text-[11px] font-black text-zinc-500 uppercase tracking-[0.35em]">Vision3</span>
                     </div>
 
-                    <div className="space-y-4">
-                        <div className="group">
-                            <label className="block text-[10px] font-black text-zinc-600 mb-2 uppercase tracking-[0.2em] pl-1">
-                                Your Goal
-                            </label>
-                            <div className="relative">
-                                <input
-                                    type="text"
-                                    value={goalTitle}
-                                    onChange={(e) => setGoalTitle(e.target.value)}
-                                    placeholder="例: 副業で月収10万円、TOEIC 800点取得"
-                                    className="w-full px-6 py-4 bg-zinc-900/50 backdrop-blur-md border border-zinc-800 rounded-[2rem] text-white placeholder-zinc-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all text-sm font-bold shadow-inner"
-                                    disabled={isLoading}
-                                    required
-                                />
-                            </div>
+                    {/* Hero: illustration with text overlay */}
+                    <div className="relative flex-1 mx-4 mt-3 rounded-[2rem] overflow-hidden min-h-0">
+                        <img
+                            src="/hero.png"
+                            alt="Vision3 Hero"
+                            className="absolute inset-0 w-full h-full object-cover opacity-50"
+                        />
+                        {/* Gradient overlay - dark at bottom for text readability */}
+                        <div className="absolute inset-0 bg-gradient-to-b from-zinc-950/10 via-zinc-950/30 to-zinc-950/95" />
+                        {/* Text overlay */}
+                        <div className="absolute bottom-6 left-6 right-6">
+                            <h2 className="text-2xl font-black text-white tracking-tight leading-tight drop-shadow-lg">未来への設計図を書く</h2>
+                            <p className="text-sm text-zinc-300/80 mt-1.5 font-medium leading-relaxed">達成したいことをもとに<br />目の前のアクションを決めましょう</p>
                         </div>
+                    </div>
 
+                    {/* Input + Button - bottom */}
+                    <div className="flex-shrink-0 px-4 pt-4 pb-6 space-y-3">
+                        <input
+                            type="text"
+                            value={goalTitle}
+                            onChange={(e) => setGoalTitle(e.target.value)}
+                            placeholder="例: 副業で月収10万円、TOEIC 800点取得"
+                            className="w-full px-6 py-4 bg-zinc-900/80 backdrop-blur-md border border-zinc-800 rounded-[2rem] text-white placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all text-sm font-bold shadow-inner"
+                            disabled={isLoading}
+                            required
+                        />
                         <button
                             type="submit"
                             disabled={!goalTitle.trim() || isLoading}
-                            className={`w-full py-4 px-6 font-black rounded-[2rem] transition-all duration-500 shadow-xl shadow-indigo-900/20 flex flex-col items-center justify-center gap-1 overflow-hidden ${isLoading
+                            className={`w-full py-4 px-6 font-black rounded-[2rem] transition-all duration-500 shadow-xl shadow-indigo-900/20 flex flex-col items-center justify-center gap-1 ${isLoading
                                 ? "bg-zinc-800 text-zinc-500 cursor-not-allowed scale-[0.98]"
                                 : "bg-indigo-600 hover:bg-indigo-500 text-white active:scale-[0.98]"
                                 }`}
                         >
                             <span>目標をアクションに分解する</span>
                             {isLoading && (
-                                <div className="flex gap-1.5 mt-2 animate-fade-in">
-                                    <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }} />
-                                    <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
-                                    <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
+                                <div className="flex gap-1.5 mt-1.5 animate-fade-in">
+                                    <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '0s' }} />
+                                    <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
+                                    <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
                                 </div>
                             )}
                         </button>

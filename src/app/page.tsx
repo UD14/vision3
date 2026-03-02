@@ -145,10 +145,7 @@ export default function Home() {
 
       <div className="flex-1 overflow-y-auto no-scrollbar">
         {!goal ? (
-          <div className="h-full flex flex-col px-6 pt-8">
-            <header className="mb-4 text-center flex-shrink-0">
-              <h1 className="text-3xl font-black bg-gradient-to-r from-white to-zinc-500 bg-clip-text text-transparent tracking-tighter">Vision3</h1>
-            </header>
+          <div className="h-full flex flex-col">
             <OnboardingFlow onComplete={handleOnboardingComplete} isLoading={isLoading} />
           </div>
         ) : (
