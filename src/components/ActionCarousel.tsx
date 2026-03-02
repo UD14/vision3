@@ -8,7 +8,7 @@ type Props = {
     completedActionIds: string[];
     onToggleAction: (actionId: string) => void;
     onEditAction: (actionId: string, newTitle: string, newScore: number) => void;
-    onAddUserAction: () => void;
+    onAddUserAction: (title: string, score: number) => void;
 };
 
 export default function ActionList({
@@ -21,6 +21,9 @@ export default function ActionList({
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editValue, setEditValue] = useState("");
     const [editScore, setEditScore] = useState(3);
+    const [isAdding, setIsAdding] = useState(false);
+    const [newTitle, setNewTitle] = useState("");
+    const [newScore, setNewScore] = useState(3);
 
     const startEditing = (action: Action) => {
         setEditingId(action.id);
@@ -32,6 +35,14 @@ export default function ActionList({
         if (editingId && editValue.trim()) {
             onEditAction(editingId, editValue.trim(), editScore);
             setEditingId(null);
+        }
+    };
+
+    const handleAdd = () => {
+        if (newTitle.trim()) {
+            onAddUserAction(newTitle.trim(), newScore);
+            setNewTitle("");
+            setIsAdding(false);
         }
     };
 
@@ -50,8 +61,9 @@ export default function ActionList({
                 <div className="flex items-center gap-3">
                     <span className="text-[10px] font-bold text-zinc-600">{completedCount}/{totalCount}</span>
                     <button
-                        onClick={onAddUserAction}
-                        className="text-[10px] font-black text-zinc-600 hover:text-indigo-400 transition-colors uppercase tracking-widest"
+                        onClick={() => setIsAdding(true)}
+                        className={`text-[10px] font-black uppercase tracking-widest transition-all ${isAdding ? "text-indigo-400" : "text-zinc-600 hover:text-indigo-400"
+                            }`}
                     >
                         + Add
                     </button>
@@ -154,6 +166,46 @@ export default function ActionList({
                         </div>
                     );
                 })}
+
+                {/* Inline Add Form */}
+                {isAdding && (
+                    <div className="p-4 space-y-3 bg-indigo-500/5 animate-fade-in border-t border-zinc-800/40">
+                        <input
+                            value={newTitle}
+                            onChange={(e) => setNewTitle(e.target.value)}
+                            placeholder="今日のアクションを入力..."
+                            className="w-full bg-zinc-800 border border-indigo-500/30 rounded-xl px-3 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                            autoFocus
+                            onKeyDown={(e) => e.key === "Enter" && handleAdd()}
+                        />
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <span className="text-[10px] font-bold text-zinc-500 uppercase">Score</span>
+                                <input
+                                    type="number"
+                                    value={newScore}
+                                    onChange={(e) => setNewScore(Number(e.target.value))}
+                                    className="w-12 bg-zinc-800 border border-zinc-700 rounded-lg px-2 py-1 text-xs text-indigo-400 font-bold"
+                                />
+                            </div>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => { setIsAdding(false); setNewTitle(""); }}
+                                    className="px-3 py-1.5 text-zinc-500 text-[10px] font-black rounded-full uppercase transition-all"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleAdd}
+                                    disabled={!newTitle.trim()}
+                                    className="px-4 py-1.5 bg-indigo-600 disabled:opacity-50 text-white text-[10px] font-black rounded-full uppercase transition-all active:scale-95"
+                                >
+                                    Add Task
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

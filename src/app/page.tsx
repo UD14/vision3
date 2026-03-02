@@ -123,12 +123,12 @@ export default function Home() {
     saveGoal(updatedGoal);
   };
 
-  const handleAddUserAction = (kpiId: string) => {
+  const handleAddUserAction = (kpiId: string, title: string, score: number) => {
     if (!goal) return;
     const newAction: Action = {
       id: generateId(),
-      title: "New Custom Action",
-      score: 3
+      title: title,
+      score: score
     };
     const updatedGoal = {
       ...goal,
@@ -298,7 +298,7 @@ export default function Home() {
               <img
                 src="/loading-ai.png"
                 alt="AI Generating"
-                className="relative w-full h-full object-cover rounded-full opacity-80"
+                className="relative w-full h-full object-cover opacity-80"
               />
               <div className="absolute inset-0 rounded-full border border-violet-500/40 animate-spin" style={{ animationDuration: '2s' }} />
             </div>
@@ -392,7 +392,7 @@ export default function Home() {
                         completedActionIds={dailyRecord?.completedActionIds || []}
                         onToggleAction={handleToggleAction}
                         onEditAction={(aid, title, score) => handleEditAction(kpi.id, aid, title, score)}
-                        onAddUserAction={() => handleAddUserAction(kpi.id)}
+                        onAddUserAction={(title: string, score: number) => handleAddUserAction(kpi.id, title, score)}
                       />
                     ))}
                   </div>
