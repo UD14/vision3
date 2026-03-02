@@ -157,16 +157,30 @@ export default function Home() {
         }),
       });
       const data = await res.json();
-      if (data.result?.actions && Array.isArray(data.result.actions)) {
+
+      // JSONフォーマット揺れ対応
+      let newActionsData = data.result?.actions;
+      if (!newActionsData && Array.isArray(data.result)) {
+        newActionsData = data.result;
+      }
+
+      if (newActionsData && Array.isArray(newActionsData)) {
         const updatedGoal = {
           ...goal,
-          kpis: goal.kpis.map((kpi) => {
-            const bonusActionData = data.result.actions.find((a: any) => a.kpiTitle === kpi.title) || data.result.actions[0]; // フォールバック
+          kpis: goal.kpis.map((kpi, idx) => {
+            let bonusActionData = newActionsData.find((a: any) =>
+              (a.kpiTitle && kpi.title.includes(a.kpiTitle)) ||
+              (a.kpiTitle && a.kpiTitle.includes(kpi.title))
+            );
+            // フォールバック: インデックスで取得、それでもなければ[0]
+            if (!bonusActionData) {
+              bonusActionData = newActionsData[idx % newActionsData.length];
+            }
             if (!bonusActionData) return kpi;
 
             const newAction: Action = {
               id: generateId(),
-              title: bonusActionData.title,
+              title: bonusActionData.title || "ボーナスアクション",
               score: bonusActionData.score || 5
             };
             return { ...kpi, actions: [...kpi.actions, newAction] };
@@ -186,9 +200,18 @@ export default function Home() {
   const isAllDone = allActions.length > 0 && dailyRecord && allActions.every(a => dailyRecord.completedActionIds.includes(a.id));
 
   useEffect(() => {
-    if (isAllDone && allClearedRef.current) {
+    if (isAllDone) {
       setTimeout(() => {
-        allClearedRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const container = document.getElementById("main-scroll-container");
+        const target = allClearedRef.current;
+        if (container && target) {
+          container.scrollTo({
+            top: target.offsetTop - 50,
+            behavior: "smooth"
+          });
+        } else {
+          allClearedRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
       }, 500); // UIの切り替わりと少し間をあけてスクロール
     }
   }, [isAllDone]);
@@ -239,7 +262,7 @@ export default function Home() {
       ) : (
         // ── Main App: スクロール可 + フッター ──
         <>
-          <div className="flex-1 overflow-y-auto no-scrollbar">
+          <div id="main-scroll-container" className="flex-1 overflow-y-auto no-scrollbar scroll-smooth">
             <div className="relative z-10 px-6 py-10">
               {/* Shared Header */}
               <header className="flex items-center justify-between mb-10 animate-fade-in">
