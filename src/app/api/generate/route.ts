@@ -112,8 +112,15 @@ KPIカテゴリ: "${kpiTitle}"
 
         if (mode === "initialize_plan" || mode === "regenerate_actions" || mode === "bonus_action") {
           const cleanText = text.replace(/```json/g, "").replace(/```/g, "").trim();
-          const parsed = JSON.parse(cleanText);
-          return NextResponse.json({ result: parsed });
+          // Extract JSON object or array from the text explicitly
+          const jsonMatch = cleanText.match(/(\{[\s\S]*\}|\[[\s\S]*\])/);
+          if (jsonMatch) {
+            const parsed = JSON.parse(jsonMatch[0]);
+            return NextResponse.json({ result: parsed });
+          } else {
+            console.error("Failed to parse AI JSON response:", cleanText);
+            throw new Error("Invalid format from AI");
+          }
         } else {
           return NextResponse.json({ result: { text } });
         }

@@ -20,7 +20,6 @@ export default function Home() {
   const [viewMode, setViewMode] = useState<"day" | "week" | "month">("week");
   const [isGeneratingBonus, setIsGeneratingBonus] = useState(false);
   const [showCongratsModal, setShowCongratsModal] = useState(false);
-  const [hasShownCongratsToday, setHasShownCongratsToday] = useState(false);
 
   const today = new Date().toISOString().split('T')[0];
 
@@ -94,6 +93,17 @@ export default function Home() {
   const handleToggleAction = (actionId: string) => {
     const updatedRecord = toggleActionCompletion(today, actionId);
     setDailyRecord(updatedRecord);
+
+    // Check if newly completed all tasks
+    const allActionsList = goal?.kpis.flatMap(kpi => kpi.actions) || [];
+    const wasAllDone = allActionsList.length > 0 && dailyRecord && allActionsList.every(a => dailyRecord.completedActionIds.includes(a.id));
+    const isNowAllDone = allActionsList.length > 0 && allActionsList.every(a => updatedRecord.completedActionIds.includes(a.id));
+
+    // If it transitioned from not done to all done, show modal
+    if (!wasAllDone && isNowAllDone) {
+      setShowCongratsModal(true);
+    }
+
     // Analytics: log action toggle (fire-and-forget)
     const isCompleted = updatedRecord.completedActionIds.includes(actionId);
     logActionToAnalytics(actionId, isCompleted);
@@ -201,12 +211,23 @@ export default function Home() {
   const allActions = goal?.kpis.flatMap(kpi => kpi.actions) || [];
   const isAllDone = allActions.length > 0 && dailyRecord && allActions.every(a => dailyRecord.completedActionIds.includes(a.id));
 
+  // モーダル表示中は背景スクロールも止めるなど、付随する副作用をここに書けるが
+  // 今回は hasShownCongratsToday を削除し、handleToggleActionでのみ発火させる
   useEffect(() => {
-    if (isAllDone && !hasShownCongratsToday) {
-      setShowCongratsModal(true);
-      setHasShownCongratsToday(true);
+    if (isAllDone) {
+      setTimeout(() => {
+        // ... (自動スクロール処理は維持)
+        const container = document.getElementById("main-scroll-container");
+        const target = allClearedRef.current;
+        if (container && target) {
+          container.scrollTo({
+            top: target.offsetTop - 50,
+            behavior: "smooth"
+          });
+        }
+      }, 500);
     }
-  }, [isAllDone, hasShownCongratsToday]);
+  }, [isAllDone]);
 
   const handleCloseCongratsModal = () => {
     setShowCongratsModal(false);
