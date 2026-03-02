@@ -19,6 +19,8 @@ export default function Home() {
   const [gapAnalysis, setGapAnalysis] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"day" | "week" | "month">("week");
   const [isGeneratingBonus, setIsGeneratingBonus] = useState(false);
+  const [showCongratsModal, setShowCongratsModal] = useState(false);
+  const [hasShownCongratsToday, setHasShownCongratsToday] = useState(false);
 
   const today = new Date().toISOString().split('T')[0];
 
@@ -200,21 +202,27 @@ export default function Home() {
   const isAllDone = allActions.length > 0 && dailyRecord && allActions.every(a => dailyRecord.completedActionIds.includes(a.id));
 
   useEffect(() => {
-    if (isAllDone) {
-      setTimeout(() => {
-        const container = document.getElementById("main-scroll-container");
-        const target = allClearedRef.current;
-        if (container && target) {
-          container.scrollTo({
-            top: target.offsetTop - 50,
-            behavior: "smooth"
-          });
-        } else {
-          allClearedRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-      }, 500); // UIの切り替わりと少し間をあけてスクロール
+    if (isAllDone && !hasShownCongratsToday) {
+      setShowCongratsModal(true);
+      setHasShownCongratsToday(true);
     }
-  }, [isAllDone]);
+  }, [isAllDone, hasShownCongratsToday]);
+
+  const handleCloseCongratsModal = () => {
+    setShowCongratsModal(false);
+    setTimeout(() => {
+      const container = document.getElementById("main-scroll-container");
+      const target = allClearedRef.current;
+      if (container && target) {
+        container.scrollTo({
+          top: target.offsetTop - 50,
+          behavior: "smooth"
+        });
+      } else {
+        allClearedRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 100);
+  };
 
   if (!mounted) return null;
 
@@ -223,6 +231,40 @@ export default function Home() {
       {/* Background Glow */}
       <div className="absolute -top-24 -left-24 w-64 h-64 bg-indigo-600/10 rounded-full blur-[100px] pointer-events-none" />
       <div className="absolute top-1/2 -right-24 w-80 h-80 bg-indigo-900/10 rounded-full blur-[120px] pointer-events-none" />
+
+      {/* Congrats Modal */}
+      {showCongratsModal && (
+        <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-zinc-950 p-6 animate-fade-in">
+          {/* Confetti & Glow */}
+          <div className="absolute inset-0 bg-[url('/loading-ai.png')] bg-cover opacity-[0.05] mix-blend-screen" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-500/20 rounded-full blur-[100px] animate-pulse" />
+
+          <div className="relative z-10 flex flex-col items-center text-center w-full max-w-sm">
+            <div className="w-32 h-32 mb-8 relative">
+              <div className="absolute inset-0 bg-yellow-400/20 rounded-full blur-xl animate-pulse" />
+              <div className="w-full h-full bg-gradient-to-br from-yellow-300 to-amber-600 rounded-full flex items-center justify-center shadow-2xl shadow-yellow-500/30 border border-yellow-400/50">
+                <span className="text-6xl drop-shadow-xl saturate-150 rotate-12 scale-110">👑</span>
+              </div>
+            </div>
+
+            <h2 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-br from-white via-indigo-200 to-indigo-400 mb-4 tracking-tighter drop-shadow-2xl">
+              PERFECT DAY!
+            </h2>
+
+            <p className="text-base text-zinc-300 font-bold mb-10 leading-relaxed bg-zinc-900/50 p-6 rounded-3xl border border-zinc-800 backdrop-blur-sm">
+              今日のタスクをすべて完了しました！<br />
+              <span className="text-indigo-400 text-lg mt-2 block">あなたは本当に素晴らしい！✨</span>
+            </p>
+
+            <button
+              onClick={handleCloseCongratsModal}
+              className="w-full py-4.5 bg-white text-zinc-950 font-black rounded-[2rem] text-sm uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-white/10"
+            >
+              次へ進む
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Bonus Generating Overlay */}
       {isGeneratingBonus && (
