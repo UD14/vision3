@@ -17,6 +17,7 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [gapAnalysis, setGapAnalysis] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"day" | "week" | "month">("week");
+  const [isGeneratingBonus, setIsGeneratingBonus] = useState(false);
 
   const today = new Date().toISOString().split('T')[0];
 
@@ -141,6 +142,43 @@ export default function Home() {
     return total;
   };
 
+  const handleGenerateBonus = async () => {
+    if (!goal) return;
+    setIsGeneratingBonus(true);
+    try {
+      const res = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ goal: goal.title, mode: "bonus_action" }),
+      });
+      const data = await res.json();
+      if (data.result?.action) {
+        const newAction: Action = {
+          id: generateId(),
+          title: data.result.action.title,
+          score: data.result.action.score || 5
+        };
+        const updatedGoal = {
+          ...goal,
+          kpis: goal.kpis.map((kpi, idx) =>
+            idx === 0 ? { ...kpi, actions: [...kpi.actions, newAction] } : kpi
+          )
+        };
+        setGoal(updatedGoal);
+        saveGoal(updatedGoal);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsGeneratingBonus(false);
+    }
+  };
+
+  const allActions = goal?.kpis.flatMap(kpi => kpi.actions) || [];
+  const isAllDone = allActions.length > 0 && dailyRecord && allActions.every(a => dailyRecord.completedActionIds.includes(a.id));
+
+  if (!mounted) return null;
+
   return (
     <div className="flex flex-col h-full bg-zinc-950 text-white relative">
       {/* Background Glow */}
@@ -181,6 +219,28 @@ export default function Home() {
                     <h2 className="text-xl font-bold text-white leading-tight">{goal.title}</h2>
                     <p className="text-[10px] font-bold text-zinc-500 mt-3 uppercase tracking-widest">Period: {goal.duration}</p>
                   </div>
+
+                  {isAllDone && (
+                    <div className="p-8 bg-gradient-to-br from-indigo-500/20 via-violet-500/10 to-transparent border border-indigo-500/30 rounded-[2.5rem] text-center relative overflow-hidden animate-fade-in shadow-2xl shadow-indigo-500/10">
+                      <div className="absolute inset-0 bg-[url('/loading-ai.png')] bg-cover opacity-[0.03] mix-blend-screen" />
+                      <div className="relative z-10">
+                        <div className="w-16 h-16 mx-auto bg-indigo-500/20 border border-indigo-500/30 rounded-full flex items-center justify-center mb-5">
+                          <span className="text-2xl drop-shadow-md">✨</span>
+                        </div>
+                        <h3 className="text-xl font-black text-white mb-2 tracking-tight">ALL CLEARED!</h3>
+                        <p className="text-xs font-bold text-indigo-300 mb-6 leading-relaxed">
+                          {["完璧な1日だったね。今日はもう休んでいいよ！", "目標に向かって一直線！お疲れ様でした☕️", "やりきった姿、最高にかっこいいよ✨", "今日はもう十分頑張った！ゆっくり休もう🌿"][Math.floor(Math.random() * 4)]}
+                        </p>
+                        <button
+                          onClick={handleGenerateBonus}
+                          disabled={isGeneratingBonus}
+                          className="px-6 py-3.5 bg-white border border-white/20 rounded-full text-[11px] font-black text-zinc-900 uppercase tracking-widest transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:pointer-events-none shadow-xl shadow-white/10"
+                        >
+                          {isGeneratingBonus ? "生成中..." : "もっと頑張る 🔥"}
+                        </button>
+                      </div>
+                    </div>
+                  )}
 
                   <div className="space-y-10">
                     {goal.kpis.map((kpi) => (

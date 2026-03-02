@@ -76,6 +76,20 @@ KPIカテゴリ: "${kpiTitle}"
 現状: "${currentStatus}"
 
 回答はテキストのみで、ポジティブかつ論理的なトーンで行ってください。`;
+    } else if (mode === "bonus_action") {
+      prompt = `あなたは目標達成の専門家です。ユーザーは今日のすべてのアクションを完了し、「もっと頑張る」と意気込んでいます。
+      
+目標: "${goal}"
+
+この目標に対して、今日追加でできる「ボーナスアクション」を1つだけ提案してください。
+以下の形式のJSONで回答してください。他の文章は一切不要です：
+{
+  "action": {"title": "具体的で今日すぐできるアクション (例: 関連書籍を1ページ読む)", "score": 5}
+}
+
+制約:
+- アクションは「〜した」という形式で、今日1回だけ実行できる粒度にしてください。
+- タイトルはすべて日本語で行ってください。`;
     }
 
     const modelsToTry = ["gemini-3-flash-preview", "gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
@@ -91,8 +105,9 @@ KPIカテゴリ: "${kpiTitle}"
         const result = await model.generateContent(prompt);
         const text = result.response.text();
 
-        if (mode === "initialize_plan") {
-          const parsed = JSON.parse(text);
+        if (mode === "initialize_plan" || mode === "regenerate_actions" || mode === "bonus_action") {
+          const cleanText = text.replace(/```json/g, "").replace(/```/g, "").trim();
+          const parsed = JSON.parse(cleanText);
           return NextResponse.json({ result: parsed });
         } else {
           return NextResponse.json({ result: { text } });
