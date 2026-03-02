@@ -239,7 +239,16 @@ export default function Home() {
               {activeTab === "me" && (
                 <div className="space-y-6 animate-fade-in pb-10">
                   <div className="p-8 bg-zinc-900/40 border border-zinc-800 rounded-[2.5rem]">
-                    <p className="text-[10px] font-black text-indigo-500 mb-4 uppercase tracking-widest">Gap Analysis</p>
+                    {/* ME Illustration */}
+                    <div className="relative w-20 h-20 mx-auto mb-5">
+                      <div className="absolute inset-0 rounded-full bg-indigo-600/20 blur-xl" />
+                      <img
+                        src="/me-illustration.png"
+                        alt="Me"
+                        className="relative w-full h-full object-cover rounded-full border border-indigo-500/20 opacity-90"
+                      />
+                    </div>
+                    <p className="text-[10px] font-black text-indigo-500 mb-4 uppercase tracking-widest text-center">Gap Analysis</p>
                     <div className="space-y-6">
                       <div>
                         <h4 className="text-xs font-black text-zinc-500 uppercase tracking-widest mb-1">Target</h4>

@@ -169,26 +169,35 @@ export default function OnboardingFlow({ onComplete, isLoading: parentLoading }:
     return (
         <div className="flex-1 flex flex-col w-full max-w-[400px] mx-auto animate-fade-in px-2">
 
-            {/* Full-screen loading overlay */}
+            {/* Full-screen AI loading overlay */}
             {isLoading && (
-                <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-zinc-950/80 backdrop-blur-xl">
-                    {/* Animated glow blobs */}
+                <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-zinc-950/90 backdrop-blur-xl">
+                    {/* Glow blobs */}
                     <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-72 h-72 bg-indigo-600/20 rounded-full blur-[100px] animate-pulse pointer-events-none" />
                     <div className="absolute bottom-1/4 left-1/2 -translate-x-1/2 w-56 h-56 bg-violet-600/15 rounded-full blur-[80px] animate-pulse pointer-events-none" style={{ animationDelay: '1s' }} />
 
-                    <div className="relative z-10 flex flex-col items-center gap-8 px-10 text-center">
-                        {/* Spinner */}
-                        <div className="w-16 h-16 rounded-full border-2 border-zinc-800 border-t-indigo-500 animate-spin" />
+                    <div className="relative z-10 flex flex-col items-center gap-6 px-10 text-center">
+                        {/* AI Illustration */}
+                        <div className="relative w-40 h-40">
+                            <div className="absolute inset-0 rounded-full bg-indigo-600/20 blur-2xl animate-pulse" />
+                            <img
+                                src="/loading-ai.png"
+                                alt="AI Processing"
+                                className="relative w-full h-full object-cover rounded-full opacity-90"
+                            />
+                            {/* Rotating ring */}
+                            <div className="absolute inset-0 rounded-full border border-indigo-500/30 animate-spin" style={{ animationDuration: '3s' }} />
+                        </div>
 
                         {/* Status text */}
-                        <div className="space-y-2">
+                        <div className="space-y-1.5">
                             <p className="text-xs font-black text-indigo-400 uppercase tracking-[0.3em]">AI Processing</p>
                             <h3 className="text-xl font-black text-white tracking-tight">アクションを設計中...</h3>
                             <p className="text-xs text-zinc-600 font-medium">あなたの目標に最適なプランを生成しています</p>
                         </div>
 
                         {/* Rotating phrase */}
-                        <div className="max-w-[280px] min-h-[60px] flex items-center justify-center">
+                        <div className="max-w-[280px] min-h-[56px] flex items-center justify-center">
                             <p className="text-sm text-zinc-300 font-medium leading-relaxed italic animate-fade-in" key={phraseIdx}>
                                 {phrases[phraseIdx]}
                             </p>
@@ -199,6 +208,35 @@ export default function OnboardingFlow({ onComplete, isLoading: parentLoading }:
                             <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }} />
                             <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '0.15s' }} />
                             <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '0.3s' }} />
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Full-screen regenerating overlay */}
+            {isRegenerating && (
+                <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-zinc-950/90 backdrop-blur-xl">
+                    <div className="absolute inset-0 bg-indigo-900/5" />
+                    <div className="relative z-10 flex flex-col items-center gap-6 px-10 text-center">
+                        {/* Illustration */}
+                        <div className="relative w-32 h-32">
+                            <div className="absolute inset-0 rounded-full bg-indigo-600/25 blur-xl animate-pulse" />
+                            <img
+                                src="/loading-ai.png"
+                                alt="AI Updating"
+                                className="relative w-full h-full object-cover rounded-full opacity-80"
+                            />
+                            <div className="absolute inset-0 rounded-full border border-violet-500/40 animate-spin" style={{ animationDuration: '2s' }} />
+                        </div>
+                        <div className="space-y-1.5">
+                            <p className="text-xs font-black text-violet-400 uppercase tracking-[0.3em]">AI Updating</p>
+                            <h3 className="text-lg font-black text-white tracking-tight">アクションを更新中...</h3>
+                            <p className="text-xs text-zinc-600 font-medium">変更されたカテゴリに合わせて<br />最適なアクションを生成しています</p>
+                        </div>
+                        <div className="flex gap-2">
+                            <div className="w-1.5 h-1.5 bg-violet-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }} />
+                            <div className="w-1.5 h-1.5 bg-violet-500 rounded-full animate-bounce" style={{ animationDelay: '0.15s' }} />
+                            <div className="w-1.5 h-1.5 bg-violet-500 rounded-full animate-bounce" style={{ animationDelay: '0.3s' }} />
                         </div>
                     </div>
                 </div>
