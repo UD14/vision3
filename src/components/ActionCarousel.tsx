@@ -11,7 +11,7 @@ type Props = {
     onAddUserAction: () => void;
 };
 
-export default function ActionCarousel({
+export default function ActionList({
     kpi,
     completedActionIds,
     onToggleAction,
@@ -35,54 +35,75 @@ export default function ActionCarousel({
         }
     };
 
+    const completedCount = kpi.actions.filter(a => completedActionIds.includes(a.id)).length;
+    const totalCount = kpi.actions.length;
+    const progress = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
+
     return (
-        <div className="space-y-4">
-            <div className="flex items-center justify-between px-2">
-                <h3 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2">
-                    <div className="w-1.5 h-4 bg-indigo-500 rounded-full" />
-                    {kpi.title}
-                </h3>
-                <button
-                    onClick={onAddUserAction}
-                    className="text-[10px] font-black text-zinc-500 hover:text-indigo-400 transition-colors uppercase tracking-widest"
-                >
-                    + Add Custom
-                </button>
+        <div className="space-y-3">
+            {/* KPI Section Header */}
+            <div className="flex items-center justify-between px-1">
+                <div className="flex items-center gap-2.5">
+                    <div className="w-1 h-5 bg-indigo-500 rounded-full" />
+                    <h3 className="text-xs font-black text-white uppercase tracking-widest">{kpi.title}</h3>
+                </div>
+                <div className="flex items-center gap-3">
+                    <span className="text-[10px] font-bold text-zinc-600">{completedCount}/{totalCount}</span>
+                    <button
+                        onClick={onAddUserAction}
+                        className="text-[10px] font-black text-zinc-600 hover:text-indigo-400 transition-colors uppercase tracking-widest"
+                    >
+                        + Add
+                    </button>
+                </div>
             </div>
 
-            <div className="flex gap-4 overflow-x-auto pb-4 px-2 no-scrollbar snap-x">
-                {kpi.actions.map((action) => {
+            {/* Progress bar */}
+            <div className="h-0.5 bg-zinc-900 rounded-full mx-1 overflow-hidden">
+                <div
+                    className="h-full bg-indigo-500 rounded-full transition-all duration-700"
+                    style={{ width: `${progress}%` }}
+                />
+            </div>
+
+            {/* Action List */}
+            <div className="bg-zinc-900/40 border border-zinc-800/60 rounded-2xl overflow-hidden">
+                {kpi.actions.map((action, idx) => {
                     const isCompleted = completedActionIds.includes(action.id);
                     const isEditing = editingId === action.id;
+                    const isLast = idx === kpi.actions.length - 1;
 
                     return (
                         <div
                             key={action.id}
-                            className={`flex-shrink-0 w-[280px] snap-center relative transition-all duration-500 ${isCompleted ? "opacity-60 scale-[0.98]" : "opacity-100 scale-100"
-                                }`}
+                            className={`${!isLast ? "border-b border-zinc-800/40" : ""}`}
                         >
-                            <div className={`h-full p-6 rounded-[2rem] border transition-all duration-500 ${isCompleted
-                                ? "bg-indigo-950/20 border-indigo-500/10"
-                                : "bg-zinc-900/40 backdrop-blur-md border-zinc-800/80 shadow-xl shadow-black/20"
-                                }`}>
-                                {isEditing ? (
-                                    <div className="space-y-4">
-                                        <input
-                                            value={editValue}
-                                            onChange={(e) => setEditValue(e.target.value)}
-                                            className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                                            autoFocus
-                                        />
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-[10px] font-bold text-zinc-500 uppercase">Score</span>
-                                                <input
-                                                    type="number"
-                                                    value={editScore}
-                                                    onChange={(e) => setEditScore(Number(e.target.value))}
-                                                    className="w-12 bg-zinc-800 border border-zinc-700 rounded-lg px-2 py-1 text-xs text-indigo-400 font-bold"
-                                                />
-                                            </div>
+                            {isEditing ? (
+                                <div className="p-4 space-y-3">
+                                    <input
+                                        value={editValue}
+                                        onChange={(e) => setEditValue(e.target.value)}
+                                        className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                                        autoFocus
+                                        onKeyDown={(e) => e.key === "Enter" && saveEdit()}
+                                    />
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-[10px] font-bold text-zinc-500 uppercase">Score</span>
+                                            <input
+                                                type="number"
+                                                value={editScore}
+                                                onChange={(e) => setEditScore(Number(e.target.value))}
+                                                className="w-12 bg-zinc-800 border border-zinc-700 rounded-lg px-2 py-1 text-xs text-indigo-400 font-bold"
+                                            />
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={() => setEditingId(null)}
+                                                className="px-3 py-1.5 text-zinc-500 text-[10px] font-black rounded-full uppercase transition-all"
+                                            >
+                                                Cancel
+                                            </button>
                                             <button
                                                 onClick={saveEdit}
                                                 className="px-4 py-1.5 bg-indigo-600 text-white text-[10px] font-black rounded-full uppercase transition-all active:scale-95"
@@ -91,38 +112,45 @@ export default function ActionCarousel({
                                             </button>
                                         </div>
                                     </div>
-                                ) : (
-                                    <>
-                                        <div className="flex justify-between items-start mb-4">
-                                            <span className={`text-[10px] font-black px-2 py-1 rounded-full border ${isCompleted ? "border-indigo-500/20 text-indigo-400 bg-indigo-500/5" : "border-zinc-700 text-zinc-500"
-                                                }`}>
-                                                +{action.score} PTS
-                                            </span>
-                                            <button
-                                                onClick={() => startEditing(action)}
-                                                className="p-1 text-zinc-600 hover:text-zinc-400 transition-colors"
-                                            >
-                                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                                </svg>
-                                            </button>
-                                        </div>
-                                        <p className={`text-sm font-bold leading-relaxed mb-6 ${isCompleted ? "text-zinc-500 line-through" : "text-white"
-                                            }`}>
-                                            {action.title}
-                                        </p>
+                                </div>
+                            ) : (
+                                <div className={`flex items-center gap-3 px-4 py-3.5 transition-all duration-300 ${isCompleted ? "opacity-50" : ""}`}>
+                                    {/* Checkbox toggle */}
+                                    <button
+                                        onClick={() => onToggleAction(action.id)}
+                                        className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${isCompleted
+                                            ? "bg-indigo-500 border-indigo-500 animate-check-pop"
+                                            : "border-zinc-700 hover:border-indigo-500"
+                                            }`}
+                                    >
+                                        {isCompleted && (
+                                            <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                                            </svg>
+                                        )}
+                                    </button>
+
+                                    {/* Action title */}
+                                    <span className={`flex-1 text-sm font-medium leading-snug ${isCompleted ? "line-through text-zinc-600" : "text-zinc-200"}`}>
+                                        {action.title}
+                                    </span>
+
+                                    {/* Score + Edit */}
+                                    <div className="flex items-center gap-2 flex-shrink-0">
+                                        <span className={`text-[10px] font-black ${isCompleted ? "text-indigo-500" : "text-zinc-600"}`}>
+                                            +{action.score}
+                                        </span>
                                         <button
-                                            onClick={() => onToggleAction(action.id)}
-                                            className={`w-full py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all duration-300 ${isCompleted
-                                                ? "bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 animate-check-pop"
-                                                : "bg-indigo-600 text-white shadow-lg shadow-indigo-900/40 hover:bg-indigo-500 active:scale-[0.97]"
-                                                }`}
+                                            onClick={() => startEditing(action)}
+                                            className="p-1 text-zinc-700 hover:text-zinc-400 transition-colors"
                                         >
-                                            {isCompleted ? "✓ Completed" : "Complete Task"}
+                                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                            </svg>
                                         </button>
-                                    </>
-                                )}
-                            </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     );
                 })}
