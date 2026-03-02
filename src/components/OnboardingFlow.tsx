@@ -30,7 +30,21 @@ export default function OnboardingFlow({ onComplete, isLoading: parentLoading }:
         "昨日より今日、今日より明日。進化を楽しみましょう。",
         "Vision3があなたの最高のパートナーになります。",
         "脳は具体的な計画を好みます。今、それを作っています。",
-        "あなたは既に行動を開始しています。それは最も難しいステップです。"
+        "あなたは既に行動を開始しています。それは最も難しいステップです。",
+        "「自分を信じる者だけが、他者を動かすことができる」- ゲーテ",
+        "「やる気に頼るのではなく、習慣に頼れ」- チャーチル",
+        "「今日できることを明日に延ばすな」- フランクリン",
+        "「成功とは、失敗から失敗へと情熱を失わず進み続けることだ」- チャーチル",
+        "「知ることは少ない。大切なのは想像することだ」- アインシュタイン",
+        "「我々は自分が繰り返すことの産物だ。だから卓越さは行動ではなく習慣だ」- アリストテレス",
+        "「道を知っているだけでは不十分。道を歩かなければならない」- ゲーテ",
+        "「困難の中に機会がある」- アインシュタイン",
+        "「夢を追い続ける勇気さえあれば、すべての夢は必ず実現できる」- ウォルト・ディズニー",
+        "「石の上にも三年」- 日本のことわざ",
+        "「最も重要な決断は、何をするかではなく、何をしないかを決めることだ」- スティーブ・ジョブズ",
+        "「我慢強い者が勝利する」- 孔子",
+        "「人生最大の栄光は、一度も転ばないことではなく、倒れるたびに起き上がることだ」- 孔子",
+        "「小さなことを積み重ねることが、とんでもないところへ行きつく唯一の道」- イチロー",
     ];
     const [phraseIdx, setPhraseIdx] = useState(0);
 
@@ -144,9 +158,15 @@ export default function OnboardingFlow({ onComplete, isLoading: parentLoading }:
             )}
             {step === "goal" && (
                 <form onSubmit={handleGoalSubmit} className="space-y-8 mt-12 pb-10">
-                    <div className="text-center mb-12">
-                        <div className="w-20 h-20 bg-indigo-500/10 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-indigo-500/20 rotate-3 animate-pulse-subtle">
-                            <span className="text-4xl">🚀</span>
+                    <div className="text-center mb-10">
+                        <div className="relative mx-auto mb-6 w-48 h-48">
+                            {/* Glow effect behind image */}
+                            <div className="absolute inset-0 rounded-3xl bg-indigo-600/20 blur-2xl scale-110" />
+                            <img
+                                src="/hero.png"
+                                alt="Vision3 Hero"
+                                className="relative w-full h-full object-cover rounded-3xl border border-indigo-500/20 shadow-2xl shadow-indigo-900/40"
+                            />
                         </div>
                         <h2 className="text-2xl font-black text-white tracking-tight leading-tight">未来への設計図を書く</h2>
                         <p className="text-sm text-zinc-500 mt-2 font-medium">達成したいことをもとに目の前のアクションを決めましょう</p>
