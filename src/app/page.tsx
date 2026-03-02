@@ -99,8 +99,8 @@ export default function Home() {
     const wasAllDone = allActionsList.length > 0 && dailyRecord && allActionsList.every(a => dailyRecord.completedActionIds.includes(a.id));
     const isNowAllDone = allActionsList.length > 0 && allActionsList.every(a => updatedRecord.completedActionIds.includes(a.id));
 
-    // If it transitioned from not done to all done, show modal
-    if (!wasAllDone && isNowAllDone) {
+    // If it is now all done, show modal (unless it was already all done)
+    if (isNowAllDone && !wasAllDone) {
       setShowCongratsModal(true);
     }
 
@@ -263,7 +263,7 @@ export default function Home() {
           <div className="relative z-10 flex flex-col items-center text-center w-full max-w-sm">
             <div className="w-32 h-32 mb-8 relative">
               <div className="absolute inset-0 bg-yellow-400/20 rounded-full blur-xl animate-pulse" />
-              <div className="w-full h-full bg-gradient-to-br from-yellow-300 to-amber-600 rounded-full flex items-center justify-center shadow-2xl shadow-yellow-500/30 border border-yellow-400/50">
+              <div className="w-full h-full bg-gradient-to-br from-yellow-300 via-amber-400 to-amber-600 rounded-full flex items-center justify-center shadow-2xl shadow-yellow-500/50 border border-yellow-400/50 animate-bounce" style={{ animationDuration: '2s' }}>
                 <span className="text-6xl drop-shadow-xl saturate-150 rotate-12 scale-110">👑</span>
               </div>
             </div>
@@ -307,6 +307,16 @@ export default function Home() {
               <h3 className="text-lg font-black text-white tracking-tight">更なる高みへのアクションを生成中...</h3>
               <p className="text-xs text-zinc-600 font-medium">現在の目標に基づき<br />今日すぐできる最高のアクションを考えています</p>
             </div>
+            {/* Regenerating category tags */}
+            {goal?.kpis && (
+              <div className="flex flex-wrap gap-2 justify-center max-w-[260px]">
+                {goal.kpis.map((kpi, i) => (
+                  <span key={i} className="px-3 py-1 bg-violet-500/15 border border-violet-500/30 rounded-full text-[11px] font-black text-violet-300 uppercase tracking-wider">
+                    {kpi.title}
+                  </span>
+                ))}
+              </div>
+            )}
             {/* Pulsing dots */}
             <div className="flex gap-2">
               <div className="w-1.5 h-1.5 bg-violet-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }} />
