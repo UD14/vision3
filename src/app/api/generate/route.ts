@@ -5,7 +5,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 export async function POST(req: Request) {
   try {
-    const { goal, currentStatus, mode, completedTask, taskHistory } = await req.json();
+    const { goal, currentStatus, mode, completedTask, taskHistory, kpiTitle } = await req.json();
 
     let prompt = "";
 
@@ -51,6 +51,24 @@ export async function POST(req: Request) {
 - 各カテゴリのアクションは必ず3つずつ提案してください。
 - アクションは「〜した」という形式で、毎日Yes/Noでチェックできる粒度にしてください。
 - タイトルやアクションはすべて日本語で行ってください。`;
+    } else if (mode === "regenerate_actions") {
+      prompt = `あなたは目標達成の専門家です。以下のKPIカテゴリに対して、毎日実行できる具体的なアクションを3つ提案してください。
+
+目標: "${goal}"
+KPIカテゴリ: "${kpiTitle}"
+
+以下の形式のJSONで回答してください。他の文章は一切不要です：
+{
+  "actions": [
+    {"title": "具体的で毎日できるアクション1", "score": 3},
+    {"title": "具体的で毎日できるアクション2", "score": 4},
+    {"title": "具体的で毎日できるアクション3", "score": 5}
+  ]
+}
+
+制約:
+- アクションは「〜した」という形式で、毎日Yes/Noでチェックできる粒度にしてください。
+- タイトルはすべて日本語で行ってください。`;
     } else if (mode === "analyze_gap") {
       prompt = `あなたは分析のプロです。ユーザーの「現状」と「目標」を分析し、その差分（ギャップ）を埋めるためのアドバイスを100文字程度で提供してください。
       

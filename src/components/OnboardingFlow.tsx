@@ -18,6 +18,8 @@ export default function OnboardingFlow({ onComplete, isLoading: parentLoading }:
     const [kpis, setKpis] = useState<KPI[]>([]);
     const [currentStatus, setCurrentStatus] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const [isRegenerating, setIsRegenerating] = useState(false);
+    const [originalKpiTitles, setOriginalKpiTitles] = useState<string[]>([]);
 
     const phrases = [
         "目標を決めて走り出したあなたは偉い！",
@@ -84,6 +86,7 @@ export default function OnboardingFlow({ onComplete, isLoading: parentLoading }:
             }));
 
             setKpis(enrichedKpis);
+            setOriginalKpiTitles(enrichedKpis.map(k => k.title));
             setDuration(data.result.duration);
             setCurrentStatus(data.result.suggestedCurrentStatus || "");
             setStep("kpi_review");
@@ -101,7 +104,51 @@ export default function OnboardingFlow({ onComplete, isLoading: parentLoading }:
         setKpis(newKpis);
     };
 
-    const handleKpiConfirm = () => {
+    const handleKpiConfirm = async () => {
+        // タイトルが変更されたKPIのアクションを再生成
+        const changedIndices = kpis
+            .map((kpi, i) => ({ kpi, i }))
+            .filter(({ kpi, i }) => kpi.title !== originalKpiTitles[i])
+            .map(({ i }) => i);
+
+        if (changedIndices.length === 0) {
+            setStep("status");
+            return;
+        }
+
+        setIsRegenerating(true);
+        try {
+            const updatedKpis = [...kpis];
+            await Promise.all(
+                changedIndices.map(async (idx) => {
+                    const res = await fetch("/api/generate", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            mode: "regenerate_actions",
+                            goal: goalTitle,
+                            kpiTitle: kpis[idx].title,
+                        }),
+                    });
+                    const data = await res.json();
+                    if (data.result?.actions) {
+                        updatedKpis[idx] = {
+                            ...updatedKpis[idx],
+                            actions: data.result.actions.map((a: any) => ({
+                                id: generateId(),
+                                title: a.title,
+                                score: a.score ?? 3,
+                            }))
+                        };
+                    }
+                })
+            );
+            setKpis(updatedKpis);
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setIsRegenerating(false);
+        }
         setStep("status");
     };
 
@@ -251,9 +298,13 @@ export default function OnboardingFlow({ onComplete, isLoading: parentLoading }:
 
                         <button
                             onClick={handleKpiConfirm}
-                            className="w-full py-5 px-6 bg-indigo-600 hover:bg-indigo-500 text-white font-black rounded-[2rem] transition-all shadow-lg active:scale-95"
+                            disabled={isRegenerating}
+                            className={`w-full py-5 px-6 font-black rounded-[2rem] transition-all shadow-lg active:scale-95 ${isRegenerating
+                                ? "bg-zinc-800 text-zinc-500 cursor-not-allowed"
+                                : "bg-indigo-600 hover:bg-indigo-500 text-white"
+                                }`}
                         >
-                            この戦略で進める
+                            {isRegenerating ? "アクションを更新中..." : "この戦略で進める"}
                         </button>
                     </div>
                 </div>

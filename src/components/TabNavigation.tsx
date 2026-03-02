@@ -40,17 +40,17 @@ export default function TabNavigation({ activeTab, onTabChange }: Props) {
 
     return (
         <nav className="sticky bottom-0 inset-x-0 bg-zinc-900/80 backdrop-blur-xl border-t border-zinc-800/50 pb-8 pt-3 px-6 z-50">
-            <div className="flex justify-between items-center max-w-[400px] mx-auto">
+            <div className="flex justify-around items-center max-w-[400px] mx-auto">
                 {tabs.map((tab) => {
                     const isActive = activeTab === tab.id;
                     return (
                         <button
                             key={tab.id}
                             onClick={() => onTabChange(tab.id)}
-                            className={`flex flex-col items-center gap-1 transition-all duration-300 ${isActive ? "text-indigo-400" : "text-zinc-500 hover:text-zinc-300"
+                            className={`relative flex flex-col items-center gap-1 transition-all duration-300 w-20 ${isActive ? "text-indigo-400" : "text-zinc-500 hover:text-zinc-300"
                                 }`}
                         >
-                            <div className={`p-1.5 rounded-xl transition-all duration-300 ${isActive ? "bg-indigo-500/10 shadow-lg shadow-indigo-500/5 rotate-0 scale-110" : "rotate-0 scale-100"
+                            <div className={`p-1.5 rounded-xl transition-all duration-300 ${isActive ? "bg-indigo-500/10 shadow-lg shadow-indigo-500/5 scale-110" : "scale-100"
                                 }`}>
                                 {tab.icon}
                             </div>
