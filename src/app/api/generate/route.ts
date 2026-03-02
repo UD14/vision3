@@ -5,7 +5,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 export async function POST(req: Request) {
   try {
-    const { goal, currentStatus, mode, completedTask, taskHistory, kpiTitle } = await req.json();
+    const { goal, currentStatus, mode, completedTask, taskHistory, kpiTitle, kpis } = await req.json();
 
     let prompt = "";
 
@@ -77,14 +77,19 @@ KPIカテゴリ: "${kpiTitle}"
 
 回答はテキストのみで、ポジティブかつ論理的なトーンで行ってください。`;
     } else if (mode === "bonus_action") {
+      const kpisStr = Array.isArray(kpis) ? kpis.join(", ") : "";
       prompt = `あなたは目標達成の専門家です。ユーザーは今日のすべてのアクションを完了し、「もっと頑張る」と意気込んでいます。
       
 目標: "${goal}"
+現在のKPIカテゴリ: ${kpisStr}
 
-この目標に対して、今日追加でできる「ボーナスアクション」を1つだけ提案してください。
+この目標とカテゴリに対して、今日追加でできる「ボーナスアクション」を各カテゴリにつき1つずつ提案してください。
 以下の形式のJSONで回答してください。他の文章は一切不要です：
 {
-  "action": {"title": "具体的で今日すぐできるアクション (例: 関連書籍を1ページ読む)", "score": 5}
+  "actions": [
+    {"kpiTitle": "カテゴリ1の名前", "title": "カテゴリ1向けの今日すぐできるアクション", "score": 5},
+    {"kpiTitle": "カテゴリ2の名前", "title": "カテゴリ2向けの今日すぐできるアクション", "score": 4}
+  ]
 }
 
 制約:

@@ -117,7 +117,8 @@ export default function OnboardingFlow({ onComplete, isLoading: parentLoading }:
             return;
         }
 
-        setRegeneratingKpiTitles(changedIndices.map(i => kpis[i].title));
+        // 表示用に全てのKPIタイトルをセット
+        setRegeneratingKpiTitles(kpis.map(k => k.title));
         setIsRegenerating(true);
         try {
             const updatedKpis = [...kpis];
@@ -232,8 +233,8 @@ export default function OnboardingFlow({ onComplete, isLoading: parentLoading }:
                         </div>
                         <div className="space-y-1.5">
                             <p className="text-xs font-black text-violet-400 uppercase tracking-[0.3em]">AI Updating</p>
-                            <h3 className="text-lg font-black text-white tracking-tight">アクションを更新中...</h3>
-                            <p className="text-xs text-zinc-600 font-medium">変更されたカテゴリに合わせて<br />最適なアクションを生成しています</p>
+                            <h3 className="text-lg font-black text-white tracking-tight">アクションを生成中...</h3>
+                            <p className="text-xs text-zinc-600 font-medium">これらのカテゴリについて<br />最適なアクションを生成しています</p>
                         </div>
                         {/* Regenerating category tags */}
                         {regeneratingKpiTitles.length > 0 && (
@@ -245,6 +246,7 @@ export default function OnboardingFlow({ onComplete, isLoading: parentLoading }:
                                 ))}
                             </div>
                         )}
+                        {/* Pulsing dots */}
                         <div className="flex gap-2">
                             <div className="w-1.5 h-1.5 bg-violet-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }} />
                             <div className="w-1.5 h-1.5 bg-violet-500 rounded-full animate-bounce" style={{ animationDelay: '0.15s' }} />
@@ -253,57 +255,64 @@ export default function OnboardingFlow({ onComplete, isLoading: parentLoading }:
                     </div>
                 </div>
             )}
-            {step === "goal" && (
-                <form onSubmit={handleGoalSubmit} className="flex-1 flex flex-col">
-                    {/* App name - small top-left */}
-                    <div className="px-6 pt-6 pb-0 flex-shrink-0">
-                        <span className="text-[11px] font-black text-zinc-500 uppercase tracking-[0.35em]">Vision3</span>
-                    </div>
 
-                    {/* Hero: illustration with text overlay */}
-                    <div className="relative flex-1 mx-4 mt-3 rounded-[2rem] overflow-hidden min-h-0">
+            {step === "goal" && (
+                <form onSubmit={handleGoalSubmit} className="relative flex-1 flex flex-col">
+                    {/* Full-screen background hero */}
+                    <div className="absolute inset-0 z-0">
                         <img
                             src="/hero.png"
-                            alt="Vision3 Hero"
-                            className="absolute inset-0 w-full h-full object-cover opacity-50"
+                            alt="Vision3"
+                            className="w-full h-full object-cover opacity-20 mix-blend-screen"
                         />
-                        {/* Gradient overlay - dark at bottom for text readability */}
-                        <div className="absolute inset-0 bg-gradient-to-b from-zinc-950/10 via-zinc-950/30 to-zinc-950/95" />
-                        {/* Text overlay */}
-                        <div className="absolute bottom-6 left-6 right-6">
-                            <h2 className="text-2xl font-black text-white tracking-tight leading-tight drop-shadow-lg">未来への設計図を書く</h2>
-                            <p className="text-sm text-zinc-300/80 mt-1.5 font-medium leading-relaxed">達成したいことをもとに<br />目の前のアクションを決めましょう</p>
-                        </div>
+                        <div className="absolute inset-0 bg-gradient-to-b from-zinc-950/20 via-zinc-950/70 to-zinc-950" />
                     </div>
 
-                    {/* Input + Button - bottom */}
-                    <div className="flex-shrink-0 px-4 pt-4 pb-6 space-y-3">
-                        <input
-                            type="text"
-                            value={goalTitle}
-                            onChange={(e) => setGoalTitle(e.target.value)}
-                            placeholder="例: 副業で月収10万円、TOEIC 800点取得"
-                            className="w-full px-6 py-4 bg-zinc-900/80 backdrop-blur-md border border-zinc-800 rounded-[2rem] text-white placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all text-sm font-bold shadow-inner"
-                            disabled={isLoading}
-                            required
-                        />
-                        <button
-                            type="submit"
-                            disabled={!goalTitle.trim() || isLoading}
-                            className={`w-full py-4 px-6 font-black rounded-[2rem] transition-all duration-500 shadow-xl shadow-indigo-900/20 flex flex-col items-center justify-center gap-1 ${isLoading
-                                ? "bg-zinc-800 text-zinc-500 cursor-not-allowed scale-[0.98]"
-                                : "bg-indigo-600 hover:bg-indigo-500 text-white active:scale-[0.98]"
-                                }`}
-                        >
-                            <span>目標をアクションに分解する</span>
-                            {isLoading && (
-                                <div className="flex gap-1.5 mt-1.5 animate-fade-in">
-                                    <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '0s' }} />
-                                    <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
-                                    <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
-                                </div>
-                            )}
-                        </button>
+                    {/* App Name */}
+                    <div className="relative z-10 pt-4 px-6 flex-shrink-0">
+                        <span className="text-[11px] font-black text-indigo-500/80 uppercase tracking-[0.35em]">Vision3</span>
+                    </div>
+
+                    {/* Main Content - Pushed up significantly */}
+                    <div className="relative z-10 flex-1 flex flex-col px-6 pt-16 w-full max-w-sm mx-auto">
+                        <div className="mb-6">
+                            <h2 className="text-3xl font-black text-white tracking-tight leading-tight drop-shadow-xl mb-2">
+                                未来への<br />設計図を描く
+                            </h2>
+                            <p className="text-sm text-zinc-300 font-medium leading-relaxed">
+                                達成したい目標をもとに<br />
+                                今日のアクションを明確にしよう
+                            </p>
+                        </div>
+
+                        <div className="space-y-3">
+                            <input
+                                type="text"
+                                value={goalTitle}
+                                onChange={(e) => setGoalTitle(e.target.value)}
+                                placeholder="例: 副業で月収10万円、TOEIC 800点取得"
+                                className="w-full px-6 py-4 bg-white/5 backdrop-blur-2xl border border-white/10 rounded-2xl text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all text-sm font-bold shadow-2xl"
+                                disabled={isLoading}
+                                required
+                            />
+                            <button
+                                type="submit"
+                                disabled={!goalTitle.trim() || isLoading}
+                                className={`w-full py-4 px-6 font-black rounded-2xl transition-all duration-300 shadow-xl shadow-indigo-900/20 flex flex-col items-center justify-center gap-1.5 ${isLoading
+                                    ? "bg-zinc-800/80 backdrop-blur-md text-zinc-500 cursor-not-allowed scale-[0.98]"
+                                    : "bg-indigo-600/90 backdrop-blur-md hover:bg-indigo-500 text-white border border-indigo-400/20 active:scale-[0.98]"
+                                    }`}
+                            >
+                                <span>目標をアクションに分解する</span>
+                                {isLoading && (
+                                    <div className="flex gap-1.5 mt-1 animate-fade-in">
+                                        <div className="w-1.5 h-1.5 bg-zinc-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }} />
+                                        <div className="w-1.5 h-1.5 bg-zinc-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
+                                        <div className="w-1.5 h-1.5 bg-zinc-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
+                                    </div>
+                                )}
+                            </button>
+                        </div>
                     </div>
                 </form>
             )}

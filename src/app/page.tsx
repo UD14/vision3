@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Goal, DailyRecord, AppTab, Action } from "@/lib/types";
 import { getGoal, saveGoal, getRecordByDate, toggleActionCompletion, generateId, getHistory, archiveGoal, deleteGoal } from "@/lib/storage";
 import TabNavigation from "@/components/TabNavigation";
@@ -15,6 +15,7 @@ export default function Home() {
   const [dailyRecord, setDailyRecord] = useState<DailyRecord | null>(null);
   const [mounted, setMounted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const allClearedRef = React.useRef<HTMLDivElement>(null);
   const [gapAnalysis, setGapAnalysis] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"day" | "week" | "month">("week");
   const [isGeneratingBonus, setIsGeneratingBonus] = useState(false);
@@ -149,20 +150,27 @@ export default function Home() {
       const res = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ goal: goal.title, mode: "bonus_action" }),
+        body: JSON.stringify({
+          goal: goal.title,
+          mode: "bonus_action",
+          kpis: goal.kpis.map(k => k.title)
+        }),
       });
       const data = await res.json();
-      if (data.result?.action) {
-        const newAction: Action = {
-          id: generateId(),
-          title: data.result.action.title,
-          score: data.result.action.score || 5
-        };
+      if (data.result?.actions && Array.isArray(data.result.actions)) {
         const updatedGoal = {
           ...goal,
-          kpis: goal.kpis.map((kpi, idx) =>
-            idx === 0 ? { ...kpi, actions: [...kpi.actions, newAction] } : kpi
-          )
+          kpis: goal.kpis.map((kpi) => {
+            const bonusActionData = data.result.actions.find((a: any) => a.kpiTitle === kpi.title) || data.result.actions[0]; // フォールバック
+            if (!bonusActionData) return kpi;
+
+            const newAction: Action = {
+              id: generateId(),
+              title: bonusActionData.title,
+              score: bonusActionData.score || 5
+            };
+            return { ...kpi, actions: [...kpi.actions, newAction] };
+          })
         };
         setGoal(updatedGoal);
         saveGoal(updatedGoal);
@@ -176,6 +184,14 @@ export default function Home() {
 
   const allActions = goal?.kpis.flatMap(kpi => kpi.actions) || [];
   const isAllDone = allActions.length > 0 && dailyRecord && allActions.every(a => dailyRecord.completedActionIds.includes(a.id));
+
+  useEffect(() => {
+    if (isAllDone && allClearedRef.current) {
+      setTimeout(() => {
+        allClearedRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 500); // UIの切り替わりと少し間をあけてスクロール
+    }
+  }, [isAllDone]);
 
   if (!mounted) return null;
 
@@ -251,7 +267,7 @@ export default function Home() {
                   </div>
 
                   {isAllDone && (
-                    <div className="p-8 bg-gradient-to-br from-indigo-500/20 via-violet-500/10 to-transparent border border-indigo-500/30 rounded-[2.5rem] text-center relative overflow-hidden animate-fade-in shadow-2xl shadow-indigo-500/10">
+                    <div ref={allClearedRef} className="p-8 bg-gradient-to-br from-indigo-500/20 via-violet-500/10 to-transparent border border-indigo-500/30 rounded-[2.5rem] text-center relative overflow-hidden animate-fade-in shadow-2xl shadow-indigo-500/10">
                       <div className="absolute inset-0 bg-[url('/loading-ai.png')] bg-cover opacity-[0.03] mix-blend-screen" />
                       <div className="relative z-10">
                         <div className="w-16 h-16 mx-auto bg-indigo-500/20 border border-indigo-500/30 rounded-full flex items-center justify-center mb-5">
