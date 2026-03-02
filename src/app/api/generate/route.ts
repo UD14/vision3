@@ -122,6 +122,7 @@ KPIカテゴリ: "${kpiTitle}"
 
         const result = await model.generateContent(prompt);
         const text = result.response.text();
+        console.log(`AI Response (${modelName}):`, text);
 
         if (mode === "initialize_plan" || mode === "regenerate_actions" || mode === "bonus_action") {
           // Robust JSON extraction
@@ -131,14 +132,16 @@ KPIカテゴリ: "${kpiTitle}"
           const jsonMatch = cleanText.match(/(\{[\s\S]*\}|\[[\s\S]*\])/);
           if (jsonMatch) {
             try {
+              console.log("Extracted JSON candidate:", jsonMatch[0]);
               const parsed = JSON.parse(jsonMatch[0]);
+              console.log("Successfully parsed JSON:", parsed);
               return NextResponse.json({ result: parsed });
             } catch (pE) {
-              console.error(`JSON.parse failed on match for model ${modelName}:`, jsonMatch[0]);
+              console.error(`JSON.parse failed for model ${modelName}:`, jsonMatch[0]);
               throw pE;
             }
           } else {
-            console.error(`No JSON pattern found in AI response from model ${modelName}:`, cleanText);
+            console.error(`No JSON pattern found in response from model ${modelName}`);
             throw new Error(`Invalid format from AI (${modelName})`);
           }
         } else {

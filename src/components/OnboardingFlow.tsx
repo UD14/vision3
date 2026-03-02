@@ -73,17 +73,23 @@ export default function OnboardingFlow({ onComplete, isLoading: parentLoading }:
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ goal: goalTitle, mode: "initialize_plan" }),
             });
-            const data = await res.json();
 
-            if (data.error || !data.result) throw new Error(data.error || "Plan generation failed");
+            if (!res.ok) {
+                const errorData = await res.json().catch(() => ({}));
+                throw new Error(errorData.error || `HTTP error! status: ${res.status}`);
+            }
+
+            const data = await res.json();
+            if (!data.result) throw new Error("Plan generation failed: No result from AI");
+            if (!data.result.kpis) throw new Error("Plan generation failed: Invalid data structure (no KPIs)");
 
             // KPIとアクションをAPIレスポンスからそのまま使う
             const enrichedKpis: KPI[] = data.result.kpis.map((kpi: any) => ({
                 id: generateId(),
-                title: kpi.title,
+                title: kpi.title || "無題のカテゴリ",
                 actions: (kpi.actions || []).map((a: any) => ({
                     id: generateId(),
-                    title: a.title,
+                    title: a.title || "無題のアクション",
                     score: a.score ?? 3,
                 }))
             }));
