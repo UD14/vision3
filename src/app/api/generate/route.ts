@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
+export const maxDuration = 60; // タイムアウト制限を60秒に引き上げ
+
 export async function POST(req: Request) {
   try {
     const { goal, currentStatus, mode, completedTask, taskHistory, kpiTitle, kpis } = await req.json();
@@ -48,7 +50,7 @@ export async function POST(req: Request) {
 
 制約:
 - カテゴリは必ず3つ提案してください。
-- 各カテゴリのアクションは必ず3つずつ提案してください。
+- 各カテゴリのアクションは「2つ〜3つ」提案してください（簡潔さを優先）。
 - アクションは「〜した」という形式で、毎日Yes/Noでチェックできる粒度にしてください。
 - タイトルやアクションはすべて日本語で行ってください。`;
     } else if (mode === "regenerate_actions") {
@@ -102,8 +104,7 @@ KPIカテゴリ: "${kpiTitle}"
 目標: "${goal}"
 
 条件：
-- 否定的な言葉は一切使わず、達成を最大限に称えてください。
-- 「次も頑張ろう」というプレッシャーよりも、「今日やり遂げたことの価値」に焦点を当ててください。
+- 達成を最大限に称え、今日やり遂げたことの価値に焦点を当ててください。
 - 目標に関係する言葉を織り交ぜて、パーソナライズされた感覚を与えてください。
 - 回答はテキストのみ（純粋な文字列）で返してください。`;
     }

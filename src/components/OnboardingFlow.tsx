@@ -109,9 +109,10 @@ export default function OnboardingFlow({ onComplete, isLoading: parentLoading }:
             setStep("kpi_review");
         } catch (error: any) {
             console.error("Plan generation error:", error);
-            const errorMessage = error.message.includes("fetch")
-                ? "通信エラーが発生しました。インターネット接続を確認してもう一度お試しください。"
-                : `プランの生成に失敗しました (${error.message})。AIモデルを切り替えて再試行することも可能です。もう一度ボタンを押してください。`;
+            const isNetworkError = error.message.includes("fetch") || error.message.includes("network");
+            const errorMessage = isNetworkError
+                ? "通信が少し不安定なようです。電波の良い場所でもう一度お試しください。🌱"
+                : "AIが考え込んでしまったようです。もう一度ボタンを押すと、今度はスムーズに作成できるかもしれません。🚀";
             alert(errorMessage);
         } finally {
             setIsLoading(false);
