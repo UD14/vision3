@@ -107,9 +107,12 @@ export default function OnboardingFlow({ onComplete, isLoading: parentLoading }:
 
             setCurrentStatus(data.result.suggestedCurrentStatus || "");
             setStep("kpi_review");
-        } catch (error) {
-            console.error(error);
-            alert("プランの生成に失敗しました。もう一度お試しください。");
+        } catch (error: any) {
+            console.error("Plan generation error:", error);
+            const errorMessage = error.message.includes("fetch")
+                ? "通信エラーが発生しました。インターネット接続を確認してもう一度お試しください。"
+                : `プランの生成に失敗しました (${error.message})。AIモデルを切り替えて再試行することも可能です。もう一度ボタンを押してください。`;
+            alert(errorMessage);
         } finally {
             setIsLoading(false);
         }
@@ -397,8 +400,8 @@ export default function OnboardingFlow({ onComplete, isLoading: parentLoading }:
                                             key={u}
                                             onClick={() => updateDuration(durationValue, u)}
                                             className={`flex-1 py-3 text-[11px] font-black uppercase tracking-widest rounded-xl transition-all ${durationUnit === u
-                                                    ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20 scale-[1.02]"
-                                                    : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50"
+                                                ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20 scale-[1.02]"
+                                                : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50"
                                                 }`}
                                         >
                                             {u}

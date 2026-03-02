@@ -108,11 +108,12 @@ KPIカテゴリ: "${kpiTitle}"
 - 回答はテキストのみ（純粋な文字列）で返してください。`;
     }
 
-    const modelsToTry = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"];
+    const modelsToTry = ["gemini-1.5-flash", "gemini-2.0-flash", "gemini-1.5-pro"];
     let lastError = null;
 
     for (const modelName of modelsToTry) {
       try {
+        console.log(`Trying model: ${modelName} for mode: ${mode}`);
         const model = genAI.getGenerativeModel({
           model: modelName,
           generationConfig: mode === "initialize_plan" ? { responseMimeType: "application/json" } : undefined
@@ -122,20 +123,28 @@ KPIカテゴリ: "${kpiTitle}"
         const text = result.response.text();
 
         if (mode === "initialize_plan" || mode === "regenerate_actions" || mode === "bonus_action") {
-          const cleanText = text.replace(/```json/g, "").replace(/```/g, "").trim();
-          // Extract JSON object or array from the text explicitly
+          // Robust JSON extraction
+          let cleanText = text.trim();
+
+          // Try to find JSON block if it's wrapped in markdown
           const jsonMatch = cleanText.match(/(\{[\s\S]*\}|\[[\s\S]*\])/);
           if (jsonMatch) {
-            const parsed = JSON.parse(jsonMatch[0]);
-            return NextResponse.json({ result: parsed });
+            try {
+              const parsed = JSON.parse(jsonMatch[0]);
+              return NextResponse.json({ result: parsed });
+            } catch (pE) {
+              console.error(`JSON.parse failed on match for model ${modelName}:`, jsonMatch[0]);
+              throw pE;
+            }
           } else {
-            console.error("Failed to parse AI JSON response:", cleanText);
-            throw new Error("Invalid format from AI");
+            console.error(`No JSON pattern found in AI response from model ${modelName}:`, cleanText);
+            throw new Error(`Invalid format from AI (${modelName})`);
           }
         } else {
           return NextResponse.json({ result: { text } });
         }
       } catch (e: any) {
+        console.error(`Error with model ${modelName}:`, e.message);
         lastError = e;
         continue;
       }
