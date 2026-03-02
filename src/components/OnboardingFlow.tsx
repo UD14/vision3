@@ -19,6 +19,7 @@ export default function OnboardingFlow({ onComplete, isLoading: parentLoading }:
     const [currentStatus, setCurrentStatus] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [isRegenerating, setIsRegenerating] = useState(false);
+    const [regeneratingKpiTitles, setRegeneratingKpiTitles] = useState<string[]>([]);
     const [originalKpiTitles, setOriginalKpiTitles] = useState<string[]>([]);
 
     const phrases = [
@@ -116,6 +117,7 @@ export default function OnboardingFlow({ onComplete, isLoading: parentLoading }:
             return;
         }
 
+        setRegeneratingKpiTitles(changedIndices.map(i => kpis[i].title));
         setIsRegenerating(true);
         try {
             const updatedKpis = [...kpis];
@@ -233,6 +235,16 @@ export default function OnboardingFlow({ onComplete, isLoading: parentLoading }:
                             <h3 className="text-lg font-black text-white tracking-tight">アクションを更新中...</h3>
                             <p className="text-xs text-zinc-600 font-medium">変更されたカテゴリに合わせて<br />最適なアクションを生成しています</p>
                         </div>
+                        {/* Regenerating category tags */}
+                        {regeneratingKpiTitles.length > 0 && (
+                            <div className="flex flex-wrap gap-2 justify-center max-w-[260px]">
+                                {regeneratingKpiTitles.map((title, i) => (
+                                    <span key={i} className="px-3 py-1 bg-violet-500/15 border border-violet-500/30 rounded-full text-[11px] font-black text-violet-300 uppercase tracking-wider">
+                                        {title}
+                                    </span>
+                                ))}
+                            </div>
+                        )}
                         <div className="flex gap-2">
                             <div className="w-1.5 h-1.5 bg-violet-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }} />
                             <div className="w-1.5 h-1.5 bg-violet-500 rounded-full animate-bounce" style={{ animationDelay: '0.15s' }} />

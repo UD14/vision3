@@ -6,6 +6,7 @@ import { getGoal, saveGoal, getRecordByDate, toggleActionCompletion, generateId,
 import TabNavigation from "@/components/TabNavigation";
 import OnboardingFlow from "@/components/OnboardingFlow";
 import ActionCarousel from "@/components/ActionCarousel";
+import { syncGoalToAnalytics, logActionToAnalytics } from "@/lib/analytics";
 import Link from "next/link";
 
 export default function Home() {
@@ -34,6 +35,8 @@ export default function Home() {
     setDailyRecord(getRecordByDate(today));
     setActiveTab("home");
     fetchGapAnalysis(newGoal);
+    // Analytics: sync goal to DB (fire-and-forget)
+    syncGoalToAnalytics(newGoal);
   };
 
   const fetchGapAnalysis = async (targetGoal: Goal) => {
@@ -87,6 +90,9 @@ export default function Home() {
   const handleToggleAction = (actionId: string) => {
     const updatedRecord = toggleActionCompletion(today, actionId);
     setDailyRecord(updatedRecord);
+    // Analytics: log action toggle (fire-and-forget)
+    const isCompleted = updatedRecord.completedActionIds.includes(actionId);
+    logActionToAnalytics(actionId, isCompleted);
   };
 
   const handleEditAction = (kpiId: string, actionId: string, newTitle: string, newScore: number) => {
@@ -237,43 +243,87 @@ export default function Home() {
               )}
 
               {activeTab === "me" && (
-                <div className="space-y-6 animate-fade-in pb-10">
-                  <div className="p-8 bg-zinc-900/40 border border-zinc-800 rounded-[2.5rem]">
-                    {/* ME Illustration */}
-                    <div className="relative w-20 h-20 mx-auto mb-5">
-                      <div className="absolute inset-0 rounded-full bg-indigo-600/20 blur-xl" />
-                      <img
-                        src="/me-illustration.png"
-                        alt="Me"
-                        className="relative w-full h-full object-cover rounded-full border border-indigo-500/20 opacity-90"
-                      />
-                    </div>
-                    <p className="text-[10px] font-black text-indigo-500 mb-4 uppercase tracking-widest text-center">Gap Analysis</p>
-                    <div className="space-y-6">
+                <div className="space-y-4 animate-fade-in pb-10">
+
+                  {/* Hero card - illustration as background */}
+                  <div className="relative rounded-[2.5rem] overflow-hidden h-52">
+                    <img
+                      src="/me-illustration.png"
+                      alt="Me"
+                      className="absolute inset-0 w-full h-full object-cover opacity-40"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-b from-zinc-950/30 via-zinc-950/50 to-zinc-950/95" />
+                    <div className="absolute inset-0 p-6 flex flex-col justify-between">
                       <div>
-                        <h4 className="text-xs font-black text-zinc-500 uppercase tracking-widest mb-1">Target</h4>
-                        <p className="text-lg font-bold text-white">{goal.title}</p>
+                        <p className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em] mb-1">My Vision</p>
+                        <h2 className="text-xl font-black text-white leading-tight">{goal.title}</h2>
                       </div>
-                      <div>
-                        <h4 className="text-xs font-black text-zinc-500 uppercase tracking-widest mb-1">Current</h4>
-                        <p className="text-sm text-zinc-400">{goal.currentStatus}</p>
-                      </div>
-                      {gapAnalysis && (
-                        <div className="pt-4 border-t border-zinc-800/50">
-                          <p className="text-sm text-indigo-300 leading-relaxed italic">
-                            &ldquo;{gapAnalysis}&rdquo;
-                          </p>
+                      <div className="flex items-end justify-between">
+                        <div>
+                          <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Period</p>
+                          <p className="text-sm font-black text-zinc-300">{goal.duration}</p>
                         </div>
-                      )}
+                        <div className="text-right">
+                          <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Today</p>
+                          <p className="text-2xl font-black text-indigo-400">+{calculateTotalScore()}</p>
+                        </div>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="space-y-4">
+                  {/* KPI progress section */}
+                  <div className="bg-zinc-900/40 border border-zinc-800 rounded-[2rem] p-5 space-y-4">
+                    <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">KPI Progress</p>
+                    {goal.kpis.map((kpi) => {
+                      const total = kpi.actions.length;
+                      const done = kpi.actions.filter(a => dailyRecord?.completedActionIds.includes(a.id)).length;
+                      const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+                      return (
+                        <div key={kpi.id}>
+                          <div className="flex justify-between items-center mb-1.5">
+                            <span className="text-xs font-bold text-zinc-300">{kpi.title}</span>
+                            <span className="text-[10px] font-black text-zinc-600">{done}/{total}</span>
+                          </div>
+                          <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-indigo-500 rounded-full transition-all duration-700"
+                              style={{ width: `${pct}%` }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Current status + Gap analysis */}
+                  <div className="bg-zinc-900/40 border border-zinc-800 rounded-[2rem] p-5 space-y-4">
+                    <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest">Gap Analysis</p>
+                    <div className="flex gap-4">
+                      <div className="flex-1">
+                        <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest mb-1">Current</p>
+                        <p className="text-sm font-bold text-zinc-300">{goal.currentStatus}</p>
+                      </div>
+                      <div className="w-px bg-zinc-800" />
+                      <div className="flex-1">
+                        <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest mb-1">Target</p>
+                        <p className="text-sm font-bold text-white">{goal.title}</p>
+                      </div>
+                    </div>
+                    {gapAnalysis && (
+                      <div className="pt-3 border-t border-zinc-800/50">
+                        <p className="text-sm text-indigo-300 leading-relaxed italic">
+                          &ldquo;{gapAnalysis}&rdquo;
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  {/* History section */}
+                  <div className="space-y-3">
                     <h3 className="text-xs font-black text-zinc-600 uppercase tracking-widest pl-2">History</h3>
-                    <div className="space-y-3">
+                    <div className="space-y-2">
                       {getHistory().map((oldGoal) => (
-                        <div key={oldGoal.id} className="p-5 bg-zinc-900/20 border border-zinc-900 rounded-2xl">
-                          <div className="flex justify-between items-center mb-1">
+                        <div key={oldGoal.id} className="p-4 bg-zinc-900/20 border border-zinc-900 rounded-2xl">
+                          <div className="flex justify-between items-center">
                             <h4 className="text-sm font-bold text-zinc-400">{oldGoal.title}</h4>
                             <span className="text-[10px] font-bold text-zinc-700">
                               {new Date(oldGoal.createdAt).toLocaleDateString()}
@@ -287,7 +337,7 @@ export default function Home() {
                     </div>
                   </div>
 
-                  <div className="pt-6 space-y-3">
+                  <div className="pt-2 space-y-3">
                     <button
                       onClick={() => { if (confirm("現在の目標をアーカイブしてリセットしますか？")) { archiveGoal(goal); setGoal(null); } }}
                       className="w-full py-4 bg-zinc-900/50 border border-zinc-800 rounded-2xl text-[10px] font-black text-zinc-400 hover:text-white transition-all uppercase tracking-[0.2em]"
