@@ -109,7 +109,12 @@ KPIカテゴリ: "${kpiTitle}"
 - 回答はテキストのみ（純粋な文字列）で返してください。`;
     }
 
-    const modelsToTry = ["gemini-1.5-flash", "gemini-2.0-flash", "gemini-pro"];
+    const modelsToTry = [
+      "gemini-2.0-flash-lite",      // 軽量版、分離クォータ
+      "gemini-1.5-flash-latest",    // 安定最新版
+      "gemini-2.0-flash",           // メイン（クォータ超過の場合は次へ）
+      "gemini-2.0-flash-exp",       // 実験版（別クォータの可能性）
+    ];
     let errors: string[] = [];
 
     for (const modelName of modelsToTry) {
