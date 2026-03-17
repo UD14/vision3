@@ -235,6 +235,13 @@ KPIカテゴリ: "${kpiTitle}"
 
   } catch (error: any) {
     console.error("AI Generate Error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ 
+        error: error.message,
+        code: error.code,
+        detail: error.detail,
+        hint: error.hint,
+        query: error.query,
+        params: error.params
+    }, { status: 500 });
   }
 }
