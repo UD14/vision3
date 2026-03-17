@@ -15,6 +15,20 @@ export const maxDuration = 60;
 export async function POST(req: Request) {
   try {
     const { goal, currentStatus, mode, completedTask, taskHistory, kpiTitle, kpis, deviceId } = await req.json();
+    
+    // DB Ping Test
+    try {
+        await sql`SELECT 1`.execute(db);
+        console.log("DB Ping Success");
+    } catch (dbPingError: any) {
+        console.error("DB Ping Failed:", dbPingError);
+        return NextResponse.json({ 
+            error: "Database Connection Failed", 
+            message: dbPingError.message,
+            code: dbPingError.code 
+        }, { status: 500 });
+    }
+
 
     const now = new Date();
     const dateStr = now.toISOString().split('T')[0];
