@@ -120,8 +120,8 @@ export default function OnboardingFlow({ onComplete, isLoading: parentLoading }:
             setLastError(error.message);
             const isNetworkError = error.message.includes("fetch") || error.message.includes("network");
             const errorMessage = isNetworkError
-                ? `通信が少し不安定なようです (${error.message})。電波の良い場所でもう一度お試しください。🌱`
-                : `AIが考え込んでしまったようです (${error.message})。もう一度ボタンを押すと、今度はスムーズに作成できるかもしれません。🚀`;
+                ? `通信が少し不安定なようです。電波の良い場所でもう一度お試しください。🌱`
+                : error.message; // サーバーからのエラー（上限到達など）をそのまま表示
             alert(errorMessage);
         } finally {
             setIsLoading(false);
@@ -347,15 +347,11 @@ export default function OnboardingFlow({ onComplete, isLoading: parentLoading }:
                                     </div>
                                 )}
                             </button>
-
-                            {lastError && (
-                                <div className="mt-4 p-4 bg-red-500/10 border border-red-500/30 rounded-xl animate-fade-in">
-                                    <p className="text-[10px] font-black text-red-500 uppercase tracking-widest mb-1">Diagnostic Info</p>
-                                    <p className="text-xs text-red-200/80 font-mono break-all leading-relaxed whitespace-pre-wrap">
-                                        {lastError}
-                                    </p>
-                                </div>
-                            )}
+                            <p className="text-[10px] text-zinc-500 text-center font-medium mt-3">
+                                <span className="text-amber-500/80 mr-1">⚠️</span>
+                                AIの利用回数には制限があります。<br />
+                                <span className="opacity-70">(上限に達すると明日まで利用できません)</span>
+                            </p>
                         </div>
                     </div>
                 </form>
@@ -440,6 +436,10 @@ export default function OnboardingFlow({ onComplete, isLoading: parentLoading }:
                         >
                             {isRegenerating ? "アクションを更新中..." : "この戦略で進める"}
                         </button>
+                        <p className="text-[10px] text-zinc-500 text-center font-medium mt-3">
+                            <span className="text-amber-500/80 mr-1">⚠️</span>
+                            ここでの再生成（タイトルの変更）もAIを利用します。
+                        </p>
                     </div>
                 </div>
             )}

@@ -1,13 +1,51 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
 
+import { db } from "@/lib/db/db";
+import { apiUsage } from "@/lib/db/schema";
+import { eq, sql } from "drizzle-orm";
+
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
-export const maxDuration = 60; // タイムアウト制限を60秒に引き上げ
+const GLOBAL_DAILY_LIMIT = 1500;
+const USER_DAILY_LIMIT = 20;
+
+export const maxDuration = 60;
 
 export async function POST(req: Request) {
   try {
-    const { goal, currentStatus, mode, completedTask, taskHistory, kpiTitle, kpis } = await req.json();
+    const { goal, currentStatus, mode, completedTask, taskHistory, kpiTitle, kpis, deviceId } = await req.json();
+
+    const now = new Date();
+    const dateStr = now.toISOString().split('T')[0];
+    const globalDayKey = `global:${dateStr}`;
+    const userKey = deviceId ? `user:${deviceId}:${dateStr}` : null;
+
+    // 0. Check Developer Bypass
+    const isDeveloper = process.env.DEVELOPER_DEVICE_ID && deviceId === process.env.DEVELOPER_DEVICE_ID;
+
+    if (!isDeveloper) {
+        // 1. Check Global Quota
+        const globalRecord = await db.query.apiUsage.findFirst({
+            where: eq(apiUsage.usageKey, globalDayKey)
+        });
+
+        if (globalRecord && globalRecord.count >= GLOBAL_DAILY_LIMIT) {
+            return NextResponse.json({ error: "本日分のAI利用上限に達しました。明日またお試しください。" }, { status: 429 });
+        }
+
+        // 2. Check User Quota
+        if (userKey) {
+            const userRecord = await db.query.apiUsage.findFirst({
+                where: eq(apiUsage.usageKey, userKey)
+            });
+            if (userRecord && userRecord.count >= USER_DAILY_LIMIT) {
+                return NextResponse.json({ error: "本日分のAI利用上限に達しました。明日またお試しください。" }, { status: 429 });
+            }
+        }
+    }
+
+    // ... proceeding to generate content ...
 
     let prompt = "";
 
@@ -110,10 +148,10 @@ KPIカテゴリ: "${kpiTitle}"
     }
 
     const modelsToTry = [
-      "gemini-2.0-flash-lite",      // 軽量版、分離クォータ
-      "gemini-1.5-flash-latest",    // 安定最新版
-      "gemini-2.0-flash",           // メイン（クォータ超過の場合は次へ）
-      "gemini-2.0-flash-exp",       // 実験版（別クォータの可能性）
+      "gemini-flash-latest",        // Working Free Tier (1.5 Flash alias)
+      "gemini-2.0-flash-lite",      // Fallback
+      "gemini-2.0-flash",           // Fallback
+      "gemini-2.0-flash-exp",       // Fallback
     ];
     let errors: string[] = [];
 
@@ -140,6 +178,23 @@ KPIカテゴリ: "${kpiTitle}"
               console.log("Extracted JSON candidate:", jsonMatch[0]);
               const parsed = JSON.parse(jsonMatch[0]);
               console.log("Successfully parsed JSON:", parsed);
+              // Increment usage counters
+              await db.insert(apiUsage)
+                  .values({ usageKey: globalDayKey, count: 1 })
+                  .onConflictDoUpdate({
+                      target: apiUsage.usageKey,
+                      set: { count: sql`${apiUsage.count} + 1` }
+                  });
+
+              if (userKey) {
+                  await db.insert(apiUsage)
+                      .values({ usageKey: userKey, count: 1 })
+                      .onConflictDoUpdate({
+                          target: apiUsage.usageKey,
+                          set: { count: sql`${apiUsage.count} + 1` }
+                      });
+              }
+
               return NextResponse.json({ result: parsed });
             } catch (pE: any) {
               console.error(`JSON.parse failed for model ${modelName}:`, jsonMatch[0]);
@@ -150,6 +205,23 @@ KPIカテゴリ: "${kpiTitle}"
             throw new Error(`Invalid format from AI (${modelName})`);
           }
         } else {
+          // Increment usage counters
+          await db.insert(apiUsage)
+              .values({ usageKey: globalDayKey, count: 1 })
+              .onConflictDoUpdate({
+                  target: apiUsage.usageKey,
+                  set: { count: sql`${apiUsage.count} + 1` }
+              });
+
+          if (userKey) {
+              await db.insert(apiUsage)
+                  .values({ usageKey: userKey, count: 1 })
+                  .onConflictDoUpdate({
+                      target: apiUsage.usageKey,
+                      set: { count: sql`${apiUsage.count} + 1` }
+                  });
+          }
+
           return NextResponse.json({ result: { text } });
         }
       } catch (e: any) {

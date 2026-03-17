@@ -46,3 +46,11 @@ export const dailyLogs = pgTable("daily_logs", {
     completedDate: date("completed_date").notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+// ── API Usage Tracking ──
+export const apiUsage = pgTable("api_usage", {
+    id: serial("id").primaryKey(),
+    usageKey: text("usage_key").notNull().unique(), // e.g., "global:2024-03", "user:device_id:2024-03-17"
+    count: integer("count").notNull().default(0),
+    lastResetAt: timestamp("last_reset_at").defaultNow().notNull(),
+});
