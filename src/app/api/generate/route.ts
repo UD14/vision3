@@ -18,7 +18,7 @@ export async function POST(req: Request) {
     
     // DB Ping Test
     try {
-        await sql`SELECT 1`.execute(db);
+        await db.execute(sql`SELECT 1`);
         console.log("DB Ping Success");
     } catch (dbPingError: any) {
         console.error("DB Ping Failed:", dbPingError);
