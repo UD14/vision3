@@ -5,6 +5,9 @@ import * as schema from "./schema";
 // Server-side only: connect via DATABASE_URL (Supabase connection string)
 const connectionString = process.env.DATABASE_URL || "";
 
-const client = postgres(connectionString, { prepare: false });
+const client = postgres(connectionString, { 
+    prepare: false,
+    ssl: 'require',
+});
 
 export const db = drizzle(client, { schema });
