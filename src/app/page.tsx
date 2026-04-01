@@ -2,10 +2,11 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { Goal, DailyRecord, AppTab, Action } from "@/lib/types";
-import { getGoal, saveGoal, getRecordByDate, toggleActionCompletion, generateId, getHistory, archiveGoal, deleteGoal } from "@/lib/storage";
+import { getGoal, saveGoal, getRecordByDate, toggleActionCompletion, generateId, getHistory, archiveGoal, deleteGoal, getVisionCards } from "@/lib/storage";
 import TabNavigation from "@/components/TabNavigation";
 import OnboardingFlow from "@/components/OnboardingFlow";
 import ActionCarousel from "@/components/ActionCarousel";
+import VisionBoard from "@/components/VisionBoard";
 import { syncGoalToAnalytics, logActionToAnalytics } from "@/lib/analytics";
 import Link from "next/link";
 
@@ -396,7 +397,7 @@ export default function Home() {
               <header className="flex items-center justify-between mb-10 animate-fade-in">
                 <div>
                   <h1 className="text-2xl font-black tracking-tighter bg-gradient-to-r from-white to-zinc-500 bg-clip-text text-transparent">
-                    {activeTab === "home" ? "Today" : activeTab === "graph" ? "Analysis" : "My Page"}
+                    {activeTab === "home" ? "Today" : activeTab === "graph" ? "Analysis" : activeTab === "vision" ? "Vision" : "My Page"}
                   </h1>
                   <p className="text-[10px] font-bold text-zinc-600 mt-1 uppercase tracking-[0.2em]">
                     Focus on your vision
@@ -499,6 +500,10 @@ export default function Home() {
                 </div>
               )}
 
+               {activeTab === "vision" && (
+                <VisionBoard />
+               )}
+
               {activeTab === "me" && (
                 <div className="space-y-4 animate-fade-in pb-10">
 
@@ -596,13 +601,13 @@ export default function Home() {
 
                   <div className="pt-2 space-y-3">
                     <button
-                      onClick={() => { if (confirm("現在の目標をアーカイブしてリセットしますか？")) { archiveGoal(goal); setGoal(null); } }}
+                      onClick={() => { if (confirm("現在の目標をアーカイブしてリセットしますか？")) { archiveGoal(goal); localStorage.removeItem("vision3_vision_cards_v2"); setGoal(null); } }}
                       className="w-full py-4 bg-zinc-900/50 border border-zinc-800 rounded-2xl text-[10px] font-black text-zinc-400 hover:text-white transition-all uppercase tracking-[0.2em]"
                     >
                       Archive &amp; Reset
                     </button>
                     <button
-                      onClick={() => { if (confirm("すべてのデータを完全に削除しますか？")) { deleteGoal(); setGoal(null); } }}
+                      onClick={() => { if (confirm("すべてのデータを完全に削除しますか？")) { deleteGoal(); localStorage.removeItem("vision3_vision_cards_v2"); setGoal(null); } }}
                       className="w-full py-4 text-[10px] font-black text-zinc-800 hover:text-red-950 transition-colors uppercase tracking-[0.2em]"
                     >
                       Delete All Data

@@ -28,5 +28,16 @@ export type DailyRecord = {
 
 export type TaskStatus = "pending" | "completed";
 
+// ビジョンボードのカード型
+export type VisionCard = {
+    id: string;
+    title: string;
+    description: string;
+    category: string;
+    imageUrl?: string;
+    isAchieved: boolean;
+    createdAt: string;
+};
+
 // タブメニュー
-export type AppTab = "home" | "graph" | "me";
+export type AppTab = "home" | "graph" | "me" | "vision";

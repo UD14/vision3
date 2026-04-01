@@ -1,4 +1,4 @@
-import { Goal, DailyRecord } from "./types";
+import { Goal, DailyRecord, VisionCard } from "./types";
 
 const GOAL_KEY = "vision3_goal_v2";
 const RECORDS_KEY = "vision3_daily_records_v2";
@@ -75,4 +75,42 @@ export const archiveGoal = (goal: Goal) => {
     localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
     localStorage.removeItem(GOAL_KEY);
     localStorage.removeItem(RECORDS_KEY);
+};
+
+// Vision Card management
+const VISION_CARDS_KEY = "vision3_vision_cards_v2";
+
+export const getVisionCards = (): VisionCard[] => {
+    if (typeof window === "undefined") return [];
+    const data = localStorage.getItem(VISION_CARDS_KEY);
+    return data ? JSON.parse(data) : [];
+};
+
+export const saveVisionCard = (card: VisionCard) => {
+    const cards = getVisionCards();
+    const index = cards.findIndex(c => c.id === card.id);
+
+    if (index >= 0) {
+        cards[index] = card;
+    } else {
+        cards.push(card);
+    }
+
+    localStorage.setItem(VISION_CARDS_KEY, JSON.stringify(cards));
+};
+
+export const toggleVisionCardAchievement = (id: string) => {
+    const cards = getVisionCards();
+    const index = cards.findIndex(c => c.id === id);
+
+    if (index >= 0) {
+        cards[index].isAchieved = !cards[index].isAchieved;
+        localStorage.setItem(VISION_CARDS_KEY, JSON.stringify(cards));
+    }
+};
+
+export const deleteVisionCard = (id: string) => {
+    const cards = getVisionCards();
+    const filtered = cards.filter(c => c.id !== id);
+    localStorage.setItem(VISION_CARDS_KEY, JSON.stringify(filtered));
 };

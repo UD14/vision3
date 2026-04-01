@@ -162,10 +162,9 @@ KPIカテゴリ: "${kpiTitle}"
     }
 
     const modelsToTry = [
-      "gemini-flash-latest",        // Working Free Tier (1.5 Flash alias)
-      "gemini-2.0-flash-lite",      // Fallback
-      "gemini-2.0-flash",           // Fallback
-      "gemini-2.0-flash-exp",       // Fallback
+      "gemini-2.0-flash",           // Primary Recommended
+      "gemini-1.5-flash-latest",    // Stable Fallback
+      "gemini-2.0-flash-lite",      // Lite Fallback
     ];
     let errors: string[] = [];
 
